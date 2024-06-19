@@ -1,0 +1,35 @@
+{
+  "extends": ["@getgreenline/eslint-config-greenline", "prettier"],
+  "settings": {
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true,
+        "project": ["tsconfig.json", "infra/tsconfig.json"]
+      },
+    },
+  },
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "import/no-restricted-paths": [
+      "error",
+      {
+        "zones": [
+          {
+            "target": "./src",
+            "from": "./infra",
+            "message": "Do not import infra resources into runtime code"
+          },
+          {
+            "target": "./infra",
+            "from": "./src",
+            "message": "Do not import runtime code into infra resources"
+          }
+        ]
+      }
+    ]
+  },
+  "env": {
+    "node": true,
+    "jest": true
+  }
+}

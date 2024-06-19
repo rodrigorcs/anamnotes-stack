@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+yarn lint-staged
+
+if git diff HEAD --name-only | grep --quiet ".github/"; then
+  echo "Changes detected in .github/. Running command: yarn build:wac"
+
+  yarn build:wac
+else
+  echo "No changes detected in .github/. Skipping command: yarn build:wac"
+fi
