@@ -18,10 +18,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20.x
-      - name: Set NPM Token
-        run: >-
-          echo //registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }} >
-          .npmrc
       - name: Set Yarn cache for app
         uses: actions/cache@v3
         id: app-cache-yarn-cache
@@ -106,24 +102,15 @@ jobs:
       environment: sandbox
     if: contains(github.ref, 'refs/heads/sandbox')
     uses: ./.github/workflows/deploy.yml
-    secrets:
-      SLACK_BOT_USER_OAUTH_ACCESS_TOKEN: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
   staging:
     name: Trigger staging deployment
     with:
       environment: staging
     if: contains(github.ref, 'refs/heads/staging')
     uses: ./.github/workflows/deploy.yml
-    secrets:
-      SLACK_BOT_USER_OAUTH_ACCESS_TOKEN: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
   prod:
     name: Trigger prod deployment
     with:
       environment: prod
     if: contains(github.ref, 'refs/heads/main')
     uses: ./.github/workflows/deploy.yml
-    secrets:
-      SLACK_BOT_USER_OAUTH_ACCESS_TOKEN: ${{ secrets.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN }}
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

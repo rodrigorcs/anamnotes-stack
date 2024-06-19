@@ -13,7 +13,6 @@
     "format:src": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "format:infra": "prettier --config .prettierrc 'infra/**/*.ts' --write",
     "format": "yarn format:src && yarn format:infra",
-    "build:wac": "npx ghawac build && git add .github/workflows/*.yml",
     "cdk": "cdk",
     "postinstall": "husky"
   },
