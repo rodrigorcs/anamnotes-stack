@@ -65,9 +65,9 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: arn:aws:iam::${{ vars.US_AWS_ACCOUNT_NUMBER }}:role/GitHub-OCID
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_NUMBER }}:role/github-oidc-role
           role-duration-seconds: 900
-          aws-region: ${{ vars.US_AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
       - name: Build app
         run: yarn build
       - name: Deploy and Synth
@@ -75,8 +75,8 @@ jobs:
           npx cdk synth
           npx cdk deploy --require-approval never
         env:
-          CDK_DEFAULT_ACCOUNT: ${{ vars.US_AWS_ACCOUNT_NUMBER }}
-          AWS_DEFAULT_REGION: ${{ vars.US_AWS_REGION }}
+          CDK_DEFAULT_ACCOUNT: ${{ vars.AWS_ACCOUNT_NUMBER }}
+          AWS_DEFAULT_REGION: ${{ vars.AWS_REGION }}
           DEPLOYED_BY: github.actions
           DEPLOYMENT_ENV: ci
           STAGE: ${{ vars.STAGE }}
