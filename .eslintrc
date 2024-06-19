@@ -1,5 +1,13 @@
 {
-  "extends": ["@getgreenline/eslint-config-greenline", "prettier"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended",
+  ],
+  "plugins": ["@typescript-eslint", "prettier", "import"],
+  "parser": "@typescript-eslint/parser",
   "settings": {
     "import/resolver": {
       "typescript": {
@@ -8,8 +16,17 @@
       },
     },
   },
-  "plugins": ["@typescript-eslint"],
   "rules": {
+    "prettier/prettier": [
+      "error",
+      {
+        "bracketSpacing": true,
+        "printWidth": 100,
+        "semi": false,
+        "singleQuote": true,
+        "trailingComma": "all",
+      },
+    ],
     "import/no-restricted-paths": [
       "error",
       {

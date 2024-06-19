@@ -1,1 +1,0 @@
-export const generateSlackMessage = (lines: string[]): string => lines.join('\n')

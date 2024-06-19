@@ -45,3 +45,24 @@ export const createRequestTemplate = (
 
   return [actionMessageBody, messageAttributes].join(joiner)
 }
+
+export type ValidStageNames = 'production' | 'staging' | 'sandbox'
+
+/**
+ * Returns the value for the specified stage from the given object, or the default value if the object is empty or the stage is not present in the object.
+ *
+ * @template T The type of the object properties and the default value
+ * @param {Object} stageObj An object with properties of type T, keyed by stage name
+ * @param {T} defaultValue The default value to return if the object is empty or the stage is not present in the object
+ * @return {T} The value for the specified stage, or the default value
+ */
+export const stageValue = <T>(
+  stageObj: { [key in ValidStageNames]?: T },
+  defaultValue: T | undefined,
+): T | undefined => {
+  const stage = process.env.STAGE as ValidStageNames
+
+  if (stage && stageObj[stage] !== undefined) return stageObj[stage]
+
+  return defaultValue
+}

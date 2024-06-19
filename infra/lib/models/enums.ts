@@ -12,9 +12,9 @@ export enum AppStage {
 }
 
 export enum AppStageProfiles {
-  PRODUCTION = 'greenline-albert',
-  STAGING = 'greenline-staging',
-  SANDBOX = 'greenline-sandbox',
+  PRODUCTION = 'prod',
+  STAGING = 'staging',
+  SANDBOX = 'personal-iam',
 }
 
 export enum DeploymentEnvironments {
@@ -36,23 +36,4 @@ export enum LambdaMetricActions {
   ERRORED = 'errored',
   FAULTED = 'faulted',
   THROTTLED = 'throttled',
-}
-
-export enum EventTopics {
-  QUERY_EXECUTION = 'queryExecution',
-  INITIAL_LOAD = 'initialLoad',
-}
-
-export enum EventTypes {
-  STARTED = 'started',
-  SCHEDULED = 'scheduled',
-}
-
-export enum EventSources {
-  BLAZE_PULSE = 'api.blaze.blaze-pulse',
-}
-
-export enum EPos {
-  US = 'US',
-  CA = 'CA',
 }

@@ -22,8 +22,6 @@ interface ICronInput {
 }
 
 interface ILambdaFunctionConstructProps {
-  functionName: string
-  handler: string
   timeoutSecs: number
   memoryMB: number
   reservedConcurrentExecutions?: number
@@ -77,7 +75,8 @@ export class LambdaFunction {
   public readonly asTarget: eventsTargets.LambdaFunction
 
   constructor(scope: Construct, props: ILambdaFunctionConstructProps) {
-    const lambdaName = `${config.projectName}-${props.functionName}`
+    const fileName = props.sourceCodePath.split('/').pop()
+    const lambdaName = `${config.projectName}-${fileName}`
     const role = new iam.Role(scope, `${lambdaName}-role`, {
       roleName: `${lambdaName}-role`,
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
@@ -100,7 +99,7 @@ export class LambdaFunction {
     this.lambdaFn = new lambda.Function(scope, `${lambdaName}-fn`, {
       functionName: lambdaName,
       code: lambda.Code.fromAsset(props.sourceCodePath),
-      handler: props.handler,
+      handler: 'index.handler',
       runtime: lambda.Runtime.NODEJS_18_X,
       timeout: Duration.seconds(props.timeoutSecs),
       layers: props.layers,
@@ -160,9 +159,7 @@ export class LambdaFunction {
       const cronArray = Array.isArray(props.cron) ? props.cron : [props.cron]
       cronArray.forEach((cron, index) => {
         const cronName = cron.name ?? (cronArray.length > 1 ? index + 1 : undefined)
-        const ruleName = `${config.projectName}-${props.functionName}-${
-          cronName ? `${cronName}-` : ''
-        }cron`
+        const ruleName = `${lambdaName}-${cronName ? `${cronName}-` : ''}cron`
         const cronRule = new events.Rule(scope, ruleName, {
           schedule: events.Schedule.expression(`cron(${cron.expression})`),
           ruleName,
