@@ -1,0 +1,247 @@
+import {
+  Duration,
+  RemovalPolicy,
+  aws_apigateway as apigw,
+  aws_logs as logs,
+  aws_certificatemanager as acm,
+} from 'aws-cdk-lib'
+import { Construct } from 'constructs'
+import { AppStage, HttpMethods } from '../models/enums'
+import { LambdaFunction } from './lambda'
+import { config } from '../../config'
+import { CommonMetricOptions, Metric } from 'aws-cdk-lib/aws-cloudwatch'
+
+interface IIntegration {
+  method: HttpMethods
+  handler: LambdaFunction
+  apigwMethodOptions: apigw.MethodOptions
+  lambdaIntegrationOption?: apigw.LambdaIntegrationOptions
+}
+
+interface IRoute {
+  resourcePath: string[]
+  integrations: IIntegration[]
+}
+
+interface INestedApiProps {
+  baseResource: apigw.Resource
+  requestAuthorizer?: apigw.IAuthorizer
+  routes: IRoute[]
+}
+
+// This may need to be updated
+export const defaultCorsPreflightOptions: apigw.CorsOptions = {
+  allowOrigins: apigw.Cors.ALL_ORIGINS,
+  allowMethods: apigw.Cors.ALL_METHODS,
+}
+
+export class NestedApiResources {
+  public readonly restApi: apigw.IRestApi
+
+  constructor(scope: Construct, props: INestedApiProps) {
+    let resource = props.baseResource
+
+    props.routes.forEach((route) => {
+      route.resourcePath.forEach((path) => {
+        resource = resource.addResource(path, {
+          defaultCorsPreflightOptions,
+        })
+      })
+
+      route.integrations.forEach((integration) => {
+        const apigwMethodOptions = {
+          ...integration.apigwMethodOptions,
+          authorizationType: props.requestAuthorizer
+            ? apigw.AuthorizationType.CUSTOM
+            : apigw.AuthorizationType.NONE,
+          authorizer: props.requestAuthorizer,
+        }
+
+        const handler = integration.handler.sourceLambda
+
+        resource.addMethod(
+          integration.method,
+          new apigw.LambdaIntegration(handler, integration.lambdaIntegrationOption),
+          apigwMethodOptions,
+        )
+      })
+    })
+  }
+}
+
+interface APIGatewayRestApiProps {
+  identitySources: string[]
+  gatewayDomain?: GatewayDomainProps
+  handlers?: {
+    requestAuthorizer?: LambdaFunction
+  }
+}
+
+interface GatewayDomainProps {
+  subdomainName: string
+  domainName: string
+  certificate: acm.ICertificate
+}
+
+export class APIGatewayRestApi {
+  public readonly restApi: apigw.RestApi
+  public readonly requestLambdaAuthorizer: apigw.RequestAuthorizer
+  public readonly restApiId: string
+  public readonly restApiRootResourceId: string
+
+  constructor(scope: Construct, props: APIGatewayRestApiProps) {
+    const accessLogGroupName = `${config.projectName}-api-access-logs`
+    const accessLogGroup = new logs.LogGroup(scope, accessLogGroupName, {
+      logGroupName: accessLogGroupName,
+      retention: logs.RetentionDays.SIX_MONTHS,
+      removalPolicy: RemovalPolicy.DESTROY,
+    })
+
+    const accessLogsCustomFormat = apigw.AccessLogFormat.custom(
+      JSON.stringify({
+        requestId: apigw.AccessLogField.contextRequestId(),
+        sourceIp: apigw.AccessLogField.contextIdentitySourceIp(),
+        requestTime: apigw.AccessLogField.contextRequestTime(),
+        httpProtocol: apigw.AccessLogField.contextProtocol(),
+        httpMethod: apigw.AccessLogField.contextHttpMethod(),
+        httpStatus: apigw.AccessLogField.contextStatus(),
+        contextPath: apigw.AccessLogField.contextPath(),
+        resourcePath: apigw.AccessLogField.contextResourcePath(),
+        responseLength: apigw.AccessLogField.contextResponseLength(),
+        apiKeyId: apigw.AccessLogField.contextIdentityApiKeyId(),
+        apiKey: apigw.AccessLogField.contextIdentityApiKey(),
+        integrationLatency: apigw.AccessLogField.contextIntegrationLatency(),
+        integrationStatus: apigw.AccessLogField.contextIntegrationStatus(),
+      }),
+    )
+
+    const restApiName = `${config.projectName}-rest-api`
+    this.restApi = new apigw.RestApi(scope, restApiName, {
+      restApiName,
+      deploy: true,
+      deployOptions: {
+        stageName: 'prod',
+        metricsEnabled: true,
+        accessLogDestination: new apigw.LogGroupLogDestination(accessLogGroup),
+        accessLogFormat: accessLogsCustomFormat,
+        tracingEnabled: true,
+      },
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigw.Cors.ALL_ORIGINS,
+        allowMethods: apigw.Cors.ALL_METHODS,
+      },
+    })
+
+    if (props.handlers?.requestAuthorizer) {
+      const requestLambdaAuthorizer = new apigw.RequestAuthorizer(
+        scope,
+        `${config.projectName}-auth-request-authorizer`,
+        {
+          identitySources: props.identitySources,
+          handler: props.handlers.requestAuthorizer.sourceLambda,
+          resultsCacheTtl: Duration.seconds(5),
+        },
+      )
+      requestLambdaAuthorizer._attachToApi(this.restApi)
+      this.requestLambdaAuthorizer = requestLambdaAuthorizer
+    }
+
+    this.restApi.addGatewayResponse('AccessDenied', {
+      type: apigw.ResponseType.ACCESS_DENIED,
+      statusCode: '403',
+      responseHeaders: {
+        'Access-Control-Allow-Origin': "'*'",
+        'Access-Control-Allow-Methods': "'*'",
+      },
+      templates: {
+        'application/json': `{
+          "errors": $context.authorizer.errors,
+        }`,
+      },
+    })
+
+    this.restApiId = this.restApi.restApiId
+    this.restApiRootResourceId = this.restApi.root.resourceId
+
+    const plan = this.restApi.addUsagePlan(`${config.projectName}-default-usage-plan`, {
+      name: 'default-usage-plan',
+    })
+
+    plan.addApiStage({ stage: this.restApi.deploymentStage })
+  }
+}
+
+interface IExistingAPIGatewayRestApiProps {
+  prefix: string
+  serviceName: string
+  restApiId: string
+  rootResourceId: string
+  requestAuthorizerId: string
+  resources: string[]
+}
+
+export class ExistingAPIGatewayRestApiResource {
+  public baseResource: apigw.Resource
+
+  requestAuthorizer?: apigw.IAuthorizer
+
+  constructor(scope: Construct, props: IExistingAPIGatewayRestApiProps) {
+    const restApiResourceId = `${props.prefix}-${config.validatedEnvs.STAGE}-rest-api`
+
+    const restApi =
+      config.validatedEnvs.STAGE === AppStage.LOCAL
+        ? new apigw.RestApi(scope, restApiResourceId)
+        : apigw.RestApi.fromRestApiAttributes(scope, restApiResourceId, {
+            restApiId: props.restApiId,
+            rootResourceId: props.rootResourceId,
+          })
+
+    this.requestAuthorizer =
+      config.validatedEnvs.STAGE === AppStage.LOCAL
+        ? undefined
+        : {
+            authorizationType: apigw.AuthorizationType.CUSTOM,
+            authorizerId: props.requestAuthorizerId,
+          }
+
+    let baseResource = restApi.root.addResource(props.serviceName)
+
+    props.resources.forEach((resource) => {
+      baseResource = baseResource.addResource(resource, {
+        defaultCorsPreflightOptions,
+      })
+    })
+
+    this.baseResource = baseResource
+
+    // https://github.com/aws/aws-cdk/issues/13526#issuecomment-1011216177
+    const deployment = new apigw.Deployment(
+      scope,
+      `${props.prefix}-${config.validatedEnvs.STAGE}-deployment`,
+      {
+        api: restApi,
+      },
+    )
+
+    // @ts-expect-error deployment.resource is not available in contract
+    deployment.resource.stageName = 'prod'
+  }
+
+  getMetric = (metricName: string, options?: CommonMetricOptions) => {
+    let metric = new Metric({
+      namespace: 'AWS/ApiGateway',
+      metricName,
+      dimensionsMap: {
+        ApiName: 'BLAZE API',
+      },
+    })
+
+    if (options) {
+      metric = metric.with(options)
+    }
+
+    return metric
+  }
+}
+
+export const IdentitySource = apigw.IdentitySource

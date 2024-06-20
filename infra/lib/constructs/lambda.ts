@@ -194,9 +194,7 @@ type TFunctionMap<T> = {
 }
 
 export enum ELambdaGroupTypes {
-  METRICS = 'metrics',
-  RESULTS = 'results',
-  INGESTION = 'ingestion',
+  INFRA = 'infra',
 }
 
 interface Props<T> {
