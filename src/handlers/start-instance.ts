@@ -5,7 +5,10 @@ import { successResponse, errorResponse } from '../lib/helpers/responses'
 
 export const handler = () => {
   try {
-    return successResponse()
+    const response = successResponse()
+    logger.info('response', { response })
+
+    return response
   } catch (error) {
     logger.error(JSON.stringify(error))
     return errorResponse(400, error as Error)
