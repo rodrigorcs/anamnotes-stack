@@ -1,31 +1,17 @@
 /* eslint-disable no-async-promise-executor */
-import { logger } from '../common/powertools/logger'
-import { SQSEvent } from 'aws-lambda'
 import 'reflect-metadata'
-import middy from '@middy/core'
-import sqsPartialBatchFailureMiddleware from '@middy/sqs-partial-batch-failure'
+import { logger } from '../common/powertools/logger'
+import { APIGatewayProxyEvent, Context } from 'aws-lambda'
+import { successResponse, errorResponse } from '../lib/helpers/responses'
 
-const getRecordPromises = (event: SQSEvent) => {
-  const recordPromises: Promise<string>[] = []
-  for (const record of event.Records) {
-    const promise = new Promise<string>(async (resolve, reject) => {
-      try {
-        const successMessage = 'Success'
-        logger.info(successMessage, { record })
-        resolve(successMessage)
-      } catch (error) {
-        reject(error)
-      }
+export const handler = (event: APIGatewayProxyEvent, context: Context) => {
+  try {
+    return successResponse({
+      event,
+      context,
     })
-    recordPromises.push(promise)
+  } catch (error) {
+    logger.error(JSON.stringify(error))
+    return errorResponse(400, error as Error)
   }
-  return recordPromises
 }
-
-const eventHandler = async (event: SQSEvent): Promise<PromiseSettledResult<string>[]> => {
-  logger.debug('Ingested event', { event })
-  const recordPromises = getRecordPromises(event)
-  return Promise.allSettled(recordPromises)
-}
-
-export const handler = middy(eventHandler).use(sqsPartialBatchFailureMiddleware())
