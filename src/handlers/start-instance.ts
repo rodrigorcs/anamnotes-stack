@@ -1,11 +1,18 @@
 import 'reflect-metadata'
 import { logger } from '../common/powertools/logger'
 // import { APIGatewayProxyEvent, Context } from 'aws-lambda'
-import { successResponse, errorResponse } from '../lib/helpers/responses'
+import { errorResponse } from '../lib/helpers/responses'
 
 export const handler = () => {
   try {
-    const response = successResponse()
+    const response = {
+      body: 'Test',
+      statusCode: 200,
+      headers: {
+        testkey: 'testvalue',
+      },
+      isBase64Encoded: false,
+    }
     logger.info('response', { response })
 
     return response
