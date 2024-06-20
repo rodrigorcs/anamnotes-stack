@@ -1,4 +1,3 @@
-/* eslint-disable no-async-promise-executor */
 import 'reflect-metadata'
 import { logger } from '../common/powertools/logger'
 import { APIGatewayProxyEvent, Context } from 'aws-lambda'
