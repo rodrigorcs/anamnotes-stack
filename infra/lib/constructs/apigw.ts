@@ -45,6 +45,9 @@ export class NestedApiResources {
       route.resourcePath.forEach((path) => {
         resource = resource.addResource(path, {
           defaultCorsPreflightOptions,
+          defaultMethodOptions: {
+            apiKeyRequired: true, // TODO: Remove when adding cognito authorizer
+          },
         })
       })
 
@@ -123,6 +126,7 @@ export class APIGatewayRestApi {
         stageName: 'prod',
         metricsEnabled: true,
         accessLogDestination: new apigw.LogGroupLogDestination(accessLogGroup),
+        loggingLevel: apigw.MethodLoggingLevel.INFO,
         accessLogFormat: accessLogsCustomFormat,
         tracingEnabled: true,
       },
@@ -130,6 +134,7 @@ export class APIGatewayRestApi {
         allowOrigins: apigw.Cors.ALL_ORIGINS,
         allowMethods: apigw.Cors.ALL_METHODS,
       },
+      apiKeySourceType: apigw.ApiKeySourceType.HEADER,
     })
 
     if (props.handlers?.requestAuthorizer) {
