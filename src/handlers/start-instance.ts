@@ -5,14 +5,14 @@ import { errorResponse } from '../lib/helpers/responses'
 
 export const handler = () => {
   try {
-    const response = {
-      // body: 'Test',
+    const response = JSON.stringify({
+      body: 'Test',
       statusCode: 200,
-      // headers: {
-      //   testkey: 'testvalue',
-      // },
-      // isBase64Encoded: false,
-    }
+      headers: {
+        testkey: 'testvalue',
+      },
+      isBase64Encoded: false,
+    })
     logger.info('response', { response })
 
     return response
