@@ -1,4 +1,3 @@
-import 'reflect-metadata'
 import { logger } from '../common/powertools/logger'
 import { errorResponse, successResponse } from '../lib/helpers/responses'
 import { middyWrapper } from '../common/middy'
