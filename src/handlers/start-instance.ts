@@ -8,10 +8,10 @@ export const handler = () => {
     const response = {
       body: 'Test',
       statusCode: 200,
-      headers: {
-        testkey: 'testvalue',
-      },
-      isBase64Encoded: false,
+      // headers: {
+      //   testkey: 'testvalue',
+      // },
+      // isBase64Encoded: false,
     }
     logger.info('response', { response })
 
