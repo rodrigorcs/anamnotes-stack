@@ -13,7 +13,7 @@ export interface ILog {
 }
 
 class CustomLogger {
-  private logger: Logger
+  public logger: Logger
   private logs: ILog[]
 
   constructor() {

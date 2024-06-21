@@ -786,10 +786,29 @@
   dependencies:
     "@datastream/core" "0.0.35"
 
+"@middy/http-cors@^5.4.1":
+  version "5.4.1"
+  resolved "https://registry.yarnpkg.com/@middy/http-cors/-/http-cors-5.4.1.tgz#57fd774bdf875a499641143c02100f48ad367101"
+  integrity sha512-U3rFKsB3gbkQ4ns4qEoC9C9dQ8HZyCNt3hUjQNuRrgHos18mkhBbnPwq+yaYa0MFhZpJJ1ROd+vQU4mMgh4EEg==
+  dependencies:
+    "@middy/util" "5.4.1"
+
+"@middy/http-error-handler@^5.4.1":
+  version "5.4.1"
+  resolved "https://registry.yarnpkg.com/@middy/http-error-handler/-/http-error-handler-5.4.1.tgz#43308d285be0e4e1925cc6ea260316e98a9b289a"
+  integrity sha512-aGkmAK5Jiu3vGdGSadMTAE7ZaqMxjAJWrrZSxbMqnzAnkOBVT+0jkPvS8p5OwhIgdBRDJEw82YDh1nk0gTnvCA==
+  dependencies:
+    "@middy/util" "5.4.1"
+
 "@middy/sqs-partial-batch-failure@^5.3.2":
   version "5.4.1"
   resolved "https://registry.yarnpkg.com/@middy/sqs-partial-batch-failure/-/sqs-partial-batch-failure-5.4.1.tgz#1cbf585d10640335b57fb7f6317032cebccf5e11"
   integrity sha512-XMbzP0SKQBM2fPUF80D4WRTdGk6QyEZvErO/Oyuknh0xiZ3I6RqfygT8ltJ2Gjgsi0fMHfrw3EIpikWT+4SS4g==
+
+"@middy/util@5.4.1":
+  version "5.4.1"
+  resolved "https://registry.yarnpkg.com/@middy/util/-/util-5.4.1.tgz#e4ff7771bea61c9f6efab0a843d8adb9006d80fd"
+  integrity sha512-6stPalVnoM1yMS+Fvc6CDZlmvGgmBaq21CBwgVjHWZvjV9YdVY4nukIyw3q7hpsMjtFF94yBBwm0BfFefCifNA==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
