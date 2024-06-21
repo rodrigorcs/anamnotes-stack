@@ -6,7 +6,7 @@ import { errorResponse } from '../lib/helpers/responses'
 export const handler = () => {
   try {
     const response = {
-      body: 'Test',
+      // body: 'Test',
       statusCode: 200,
       // headers: {
       //   testkey: 'testvalue',
