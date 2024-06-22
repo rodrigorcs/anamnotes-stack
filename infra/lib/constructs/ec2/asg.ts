@@ -23,6 +23,7 @@ export class AutoScalingGroup {
       maxCapacity: props.maxCapacity,
       minCapacity: props.minCapacity,
       machineImage: props.machineImage,
+      allowAllOutbound: true,
     })
   }
 }

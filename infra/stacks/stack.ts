@@ -9,8 +9,9 @@ import {
 } from '../lib/constructs/api-gateway'
 import { HttpMethods } from '../lib/models/enums'
 import { ExistingVPC } from '../lib/constructs/ec2/vpc'
-import { AutoScalingGroup } from '../lib/constructs/ec2/auto-scaling'
+import { AutoScalingGroup } from '../lib/constructs/ec2/asg'
 import { ExistingMachineImage } from '../lib/constructs/ec2/ami'
+import { ApplicationLoadBalancer } from '../lib/constructs/ec2/elb'
 
 export class AnamnotesStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -36,13 +37,21 @@ export class AnamnotesStack extends Stack {
 
     // AUTO SCALING GROUPS
 
-    new AutoScalingGroup(this, {
+    const { group: autoScalingGroup } = new AutoScalingGroup(this, {
       name: 'api-instances',
       vpc: existingVPC,
       instanceType: 'g5.xlarge',
       maxCapacity: 1,
       minCapacity: 0,
       machineImage: existingMachineImage,
+    })
+
+    // LOAD BALANCER
+
+    new ApplicationLoadBalancer(this, {
+      name: 'api-instances',
+      vpc: existingVPC,
+      targets: [autoScalingGroup],
     })
 
     // LAMBDAS
