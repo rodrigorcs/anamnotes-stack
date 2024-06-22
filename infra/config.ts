@@ -25,6 +25,16 @@ export const config = {
   projectId,
   projectName,
   stage,
+  aws: {
+    ec2: {
+      vpc: {
+        vpcId: 'vpc-03e671a621d004593',
+      },
+      ami: {
+        imageName: 'sandbox-anamnotes-api-image',
+      },
+    },
+  },
   stack: {
     env: {
       account: validatedEnvs.CDK_DEFAULT_ACCOUNT,

@@ -6,9 +6,9 @@ import {
   aws_certificatemanager as acm,
 } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
-import { AppStage, HttpMethods } from '../models/enums'
-import { LambdaFunction } from './lambda'
-import { config } from '../../config'
+import { AppStage, HttpMethods } from '../../models/enums'
+import { LambdaFunction } from '../lambda'
+import { config } from '../../../config'
 import { CommonMetricOptions, Metric } from 'aws-cdk-lib/aws-cloudwatch'
 
 interface IIntegration {

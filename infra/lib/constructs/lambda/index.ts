@@ -11,8 +11,8 @@ import {
   aws_events as events,
   aws_events_targets as eventsTargets,
 } from 'aws-cdk-lib'
-import { AppStage, LambdaMetricActions } from '../models/enums'
-import { config } from '../../config'
+import { AppStage, LambdaMetricActions } from '../../models/enums'
+import { config } from '../../../config'
 import { Metric, MetricOptions } from 'aws-cdk-lib/aws-cloudwatch'
 
 interface ICronInput {
