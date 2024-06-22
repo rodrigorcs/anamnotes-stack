@@ -26,6 +26,9 @@ export const config = {
   projectName,
   stage,
   aws: {
+    sm: {
+      apiEnvsSecretName: `${projectName}-api-envs`,
+    },
     ec2: {
       vpc: {
         vpcId: 'vpc-03e671a621d004593',

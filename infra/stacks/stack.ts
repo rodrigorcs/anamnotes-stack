@@ -12,10 +12,21 @@ import { ExistingVPC } from '../lib/constructs/ec2/vpc'
 import { AutoScalingGroup } from '../lib/constructs/ec2/asg'
 import { ExistingMachineImage } from '../lib/constructs/ec2/ami'
 import { ApplicationLoadBalancer } from '../lib/constructs/ec2/alb'
+import { ExistingSecret } from '../lib/constructs/sm'
 
 export class AnamnotesStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props)
+
+    // SECRETS
+
+    const { secret: apiEnvs } = new ExistingSecret(this, {
+      secretName: config.aws.sm.apiEnvsSecretName,
+    })
+    const API_ENVS = {
+      HF_TOKEN: apiEnvs.secretValueFromJson('HF_TOKEN').unsafeUnwrap(),
+      OPENAI_API_KEY: apiEnvs.secretValueFromJson('OPENAI_API_KEY').unsafeUnwrap(),
+    }
 
     // ENVS
 
@@ -45,6 +56,19 @@ export class AnamnotesStack extends Stack {
       minCapacity: 0,
       machineImage: existingMachineImage,
       keyPairName: config.aws.ec2.asg.keyPairName,
+      commandsOnBoot: [
+        'cd /.', // Go to root directory
+        'cd home/ec2-user/anamnotes', // Go to anamnotes directory
+        `sudo docker run
+          --gpus all
+          --ipc=host 
+          --ulimit memlock=-1 
+          -d 
+          -p 80:80
+          -e HF_TOKEN='${API_ENVS.HF_TOKEN}'
+          -e OPENAI_API_KEY='${API_ENVS.OPENAI_API_KEY}' 
+          anamnotes-api:v1.0`, // Run the docker container
+      ],
     })
 
     // LOAD BALANCER

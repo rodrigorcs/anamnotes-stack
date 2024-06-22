@@ -10,6 +10,7 @@ interface IAutoScalingGroupProps {
   minCapacity?: number
   machineImage?: ec2.IMachineImage
   keyPairName?: string
+  commandsOnBoot?: string[]
 }
 
 export class AutoScalingGroup {
@@ -32,5 +33,7 @@ export class AutoScalingGroup {
       allowAllOutbound: true,
       keyPair,
     })
+
+    if (props.commandsOnBoot) this.group.addUserData(...props.commandsOnBoot)
   }
 }
