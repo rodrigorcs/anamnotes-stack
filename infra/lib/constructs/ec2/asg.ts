@@ -9,6 +9,7 @@ interface IAutoScalingGroupProps {
   maxCapacity?: number
   minCapacity?: number
   machineImage?: ec2.IMachineImage
+  keyPairName?: string
 }
 
 export class AutoScalingGroup {
@@ -16,6 +17,11 @@ export class AutoScalingGroup {
 
   constructor(scope: Construct, props: IAutoScalingGroupProps) {
     const groupName = `${config.projectName}-${props.name}-group`
+
+    const keyPair = props.keyPairName
+      ? ec2.KeyPair.fromKeyPairName(scope, `${groupName}-key-pair`, props.keyPairName)
+      : undefined
+
     this.group = new autoscaling.AutoScalingGroup(scope, groupName, {
       autoScalingGroupName: groupName,
       vpc: props.vpc,
@@ -24,6 +30,7 @@ export class AutoScalingGroup {
       minCapacity: props.minCapacity,
       machineImage: props.machineImage,
       allowAllOutbound: true,
+      keyPair,
     })
   }
 }

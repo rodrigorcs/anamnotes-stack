@@ -33,6 +33,9 @@ export const config = {
       ami: {
         imageName: 'sandbox-anamnotes-api-image',
       },
+      asg: {
+        keyPairName: 'sandbox-anamnotes-api-instance-keypair',
+      },
     },
   },
   stack: {

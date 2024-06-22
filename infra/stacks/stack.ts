@@ -44,6 +44,7 @@ export class AnamnotesStack extends Stack {
       maxCapacity: 1,
       minCapacity: 0,
       machineImage: existingMachineImage,
+      keyPairName: config.aws.ec2.asg.keyPairName,
     })
 
     // LOAD BALANCER
