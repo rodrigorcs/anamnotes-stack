@@ -24,8 +24,8 @@ export class AnamnotesStack extends Stack {
       secretName: config.aws.sm.apiEnvsSecretName,
     })
     const API_ENVS = {
-      HF_TOKEN: apiEnvs.secretValueFromJson('HF_TOKEN').toString(),
-      OPENAI_API_KEY: apiEnvs.secretValueFromJson('OPENAI_API_KEY').toString(),
+      HF_TOKEN: apiEnvs.secretValueFromJson('HF_TOKEN').unsafeUnwrap().toString(),
+      OPENAI_API_KEY: apiEnvs.secretValueFromJson('OPENAI_API_KEY').unsafeUnwrap().toString(),
     }
 
     // ENVS
