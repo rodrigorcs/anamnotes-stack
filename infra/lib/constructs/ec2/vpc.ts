@@ -21,7 +21,6 @@ export class ExistingVPC extends Construct {
       vpcName: props.vpcName,
       ownerAccountId: props.accountId,
       vpcId: props.vpcId,
-      isDefault: false,
     })
 
     if (props.allowAllOutbound) {
