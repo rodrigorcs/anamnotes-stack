@@ -13,7 +13,7 @@ export class ApplicationLoadBalancer {
 
   constructor(scope: Construct, props: IAutoScalingGroupProps) {
     // LOAD BALANCER
-    const elbName = `${config.projectName}-${props.name}-load-balancer`
+    const elbName = `${config.projectName}-${props.name}-alb`
     this.loadBalancer = new elb.ApplicationLoadBalancer(scope, elbName, {
       loadBalancerName: elbName,
       vpc: props.vpc,

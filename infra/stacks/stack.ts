@@ -11,7 +11,7 @@ import { HttpMethods } from '../lib/models/enums'
 import { ExistingVPC } from '../lib/constructs/ec2/vpc'
 import { AutoScalingGroup } from '../lib/constructs/ec2/asg'
 import { ExistingMachineImage } from '../lib/constructs/ec2/ami'
-import { ApplicationLoadBalancer } from '../lib/constructs/ec2/elb'
+import { ApplicationLoadBalancer } from '../lib/constructs/ec2/alb'
 
 export class AnamnotesStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
