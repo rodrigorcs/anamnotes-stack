@@ -49,7 +49,7 @@ export class AnamnotesStack extends Stack {
     // LOAD BALANCER
 
     new ApplicationLoadBalancer(this, {
-      name: 'api-instances',
+      name: 'api',
       vpc: existingVPC,
       targets: [autoScalingGroup],
     })
