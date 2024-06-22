@@ -59,15 +59,7 @@ export class AnamnotesStack extends Stack {
       commandsOnBoot: [
         'cd /.', // Go to root directory
         'cd home/ec2-user/anamnotes', // Go to anamnotes directory
-        `sudo docker run
-          --gpus all
-          --ipc=host 
-          --ulimit memlock=-1 
-          -d 
-          -p 80:80
-          -e HF_TOKEN='${API_ENVS.HF_TOKEN}'
-          -e OPENAI_API_KEY='${API_ENVS.OPENAI_API_KEY}' 
-          anamnotes-api:v1.0`, // Run the docker container
+        `sudo docker run --gpus all --ipc=host --ulimit memlock=-1 -d -p 80:80 -e HF_TOKEN='${API_ENVS.HF_TOKEN}' -e OPENAI_API_KEY='${API_ENVS.OPENAI_API_KEY}' anamnotes-api:v1.0`, // Run the docker container
       ],
     })
 
