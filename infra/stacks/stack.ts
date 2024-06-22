@@ -24,8 +24,8 @@ export class AnamnotesStack extends Stack {
       secretName: config.aws.sm.apiEnvsSecretName,
     })
     const API_ENVS = {
-      HF_TOKEN: apiEnvs.secretValueFromJson('HF_TOKEN').unsafeUnwrap(),
-      OPENAI_API_KEY: apiEnvs.secretValueFromJson('OPENAI_API_KEY').unsafeUnwrap(),
+      HF_TOKEN: apiEnvs.secretValueFromJson('HF_TOKEN').toString(),
+      OPENAI_API_KEY: apiEnvs.secretValueFromJson('OPENAI_API_KEY').toString(),
     }
 
     // ENVS
@@ -51,7 +51,7 @@ export class AnamnotesStack extends Stack {
     const { group: autoScalingGroup } = new AutoScalingGroup(this, {
       name: 'api-instances',
       vpc: existingVPC,
-      instanceType: 'g5.xlarge',
+      instanceType: 'g6.xlarge',
       maxCapacity: 1,
       minCapacity: 0,
       machineImage: existingMachineImage,
