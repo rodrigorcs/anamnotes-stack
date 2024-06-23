@@ -12,12 +12,36 @@ export class ApplicationLoadBalancer {
   public readonly loadBalancer: elb.ApplicationLoadBalancer
 
   constructor(scope: Construct, props: IAutoScalingGroupProps) {
+    // SECURITY GROUPS
+    const securityGroupName = `${config.projectName}-${props.name}-sg`
+    const securityGroup = new ec2.SecurityGroup(scope, securityGroupName, {
+      vpc: props.vpc,
+      securityGroupName,
+      allowAllOutbound: true,
+    })
+    securityGroup.addIngressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(80),
+      'Allow HTTP traffic from anywhere',
+    )
+    securityGroup.addIngressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(22),
+      'Allow SSH traffic from anywhere',
+    )
+    securityGroup.addIngressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(443),
+      'Allow HTTPS traffic from anywhere',
+    )
+
     // LOAD BALANCER
     const elbName = `${config.projectName}-${props.name}-alb`
     this.loadBalancer = new elb.ApplicationLoadBalancer(scope, elbName, {
       loadBalancerName: elbName,
       vpc: props.vpc,
       internetFacing: true,
+      securityGroup,
     })
 
     // LISTENERS
