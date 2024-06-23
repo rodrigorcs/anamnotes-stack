@@ -20,6 +20,7 @@ const stage = getDeploymentStage(validatedEnvs.STAGE)
 
 const projectId = 'anamnotes-stack' as const
 const projectName = `${stage}-${projectId}` as const
+const ssmParametersRoot = `/${stage}/${projectId}` as const
 
 export const config = {
   projectId,
@@ -28,6 +29,10 @@ export const config = {
   aws: {
     sm: {
       apiEnvsSecretName: `${projectName}-api-envs`,
+    },
+    ssm: {
+      hfToken: `${ssmParametersRoot}/hf-token`,
+      openaiApiKey: `${ssmParametersRoot}/openai-api-key`,
     },
     ec2: {
       vpc: {
