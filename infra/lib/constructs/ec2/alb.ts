@@ -19,21 +19,8 @@ export class ApplicationLoadBalancer {
       securityGroupName,
       allowAllOutbound: true,
     })
-    securityGroup.addIngressRule(
-      ec2.Peer.anyIpv4(),
-      ec2.Port.tcp(80),
-      'Allow HTTP traffic from anywhere',
-    )
-    securityGroup.addIngressRule(
-      ec2.Peer.anyIpv4(),
-      ec2.Port.tcp(22),
-      'Allow SSH traffic from anywhere',
-    )
-    securityGroup.addIngressRule(
-      ec2.Peer.anyIpv4(),
-      ec2.Port.tcp(443),
-      'Allow HTTPS traffic from anywhere',
-    )
+    securityGroup.connections.allowFromAnyIpv4(ec2.Port.allTraffic())
+    securityGroup.connections.allowToAnyIpv4(ec2.Port.allTraffic())
 
     // LOAD BALANCER
     const elbName = `${config.projectName}-${props.name}-alb`
