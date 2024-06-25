@@ -34,11 +34,16 @@ export class ApplicationLoadBalancer {
     // LISTENERS
     const httpListener = this.loadBalancer.addListener(`${elbName}-http-listener`, {
       protocol: elb.ApplicationProtocol.HTTP,
+      port: 80,
+      open: true,
     })
 
-    httpListener.addTargets(`${elbName}-http-listener-targets`, {
+    const targetGroupName = `${elbName}-http-listener-target-group`
+    httpListener.addTargets(targetGroupName, {
       protocol: elb.ApplicationProtocol.HTTP,
       targets: props.targets,
+      port: 8080,
+      targetGroupName,
     })
   }
 }
