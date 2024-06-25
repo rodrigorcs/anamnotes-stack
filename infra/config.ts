@@ -39,7 +39,7 @@ export const config = {
         vpcId: 'vpc-03e671a621d004593',
       },
       ami: {
-        imageName: 'sandbox-anamnotes-api-image-v2',
+        imageName: 'sandbox-anamnotes-api-image-v3',
       },
       asg: {
         keyPairName: 'sandbox-anamnotes-api-instance-keypair',
