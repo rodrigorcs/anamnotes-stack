@@ -43,7 +43,6 @@ export class ApplicationLoadBalancer {
       protocol: elb.ApplicationProtocol.HTTP,
       targets: props.targets,
       port: 8080,
-      targetGroupName,
     })
   }
 }
