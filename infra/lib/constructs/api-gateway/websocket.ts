@@ -24,7 +24,7 @@ export class APIGatewayWebSocket {
       ...(props?.handlers?.connect && {
         connectRouteOptions: {
           integration: new apigwIntegrations.WebSocketLambdaIntegration(
-            `${props.handlers.connect.functionName}-integration`,
+            `${apiName}-connect-fn-integration`,
             props.handlers.connect,
           ),
         },
@@ -32,7 +32,7 @@ export class APIGatewayWebSocket {
       ...(props?.handlers?.disconnect && {
         disconnectRouteOptions: {
           integration: new apigwIntegrations.WebSocketLambdaIntegration(
-            `${props.handlers.disconnect.functionName}-integration`,
+            `${apiName}-disconnect-fn-integration`,
             props.handlers.disconnect,
           ),
         },
