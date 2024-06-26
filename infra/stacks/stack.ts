@@ -6,13 +6,14 @@ import {
   APIGatewayRestApi,
   IdentitySource,
   NestedApiResources,
-} from '../lib/constructs/api-gateway'
+} from '../lib/constructs/api-gateway/rest'
 import { HttpMethods } from '../lib/models/enums'
 import { ExistingVPC } from '../lib/constructs/ec2/vpc'
 import { AutoScalingGroup } from '../lib/constructs/ec2/asg'
 import { ExistingMachineImage } from '../lib/constructs/ec2/ami'
 import { ApplicationLoadBalancer } from '../lib/constructs/ec2/alb'
 import { ExistingStringSystemParameter } from '../lib/constructs/ssm'
+import { APIGatewayWebSocket } from '../lib/constructs/api-gateway/websocket'
 
 export class AnamnotesStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -92,7 +93,23 @@ export class AnamnotesStack extends Stack {
       },
     })
 
-    // API GATEWAY
+    const { functionMap: websocketLambdas } = new GroupedLambdaFunctions(this, {
+      type: ELambdaGroupTypes.WEBSOCKET,
+      sharedEnvs: sharedLambdaEnvs,
+      functionProps: {
+        connect: {
+          reservedConcurrentExecutions: 1,
+          memoryMB: 128,
+          timeoutSecs: 300,
+          sourceCodePath: '../dist/handlers/connect',
+          environment: {
+            ...sharedLambdaEnvs,
+          },
+        },
+      },
+    })
+
+    // API GATEWAY - REST API
 
     const { restApi: api } = new APIGatewayRestApi(this, {
       identitySources: [IdentitySource.header('Authorization')],
@@ -117,6 +134,14 @@ export class AnamnotesStack extends Stack {
           ],
         },
       ],
+    })
+
+    // API GATEWAY - WEBSOCKET API
+
+    new APIGatewayWebSocket(this, {
+      handlers: {
+        connect: websocketLambdas.connect.lambdaFn,
+      },
     })
   }
 }
