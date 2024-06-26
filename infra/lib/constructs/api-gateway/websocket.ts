@@ -18,7 +18,7 @@ export class APIGatewayWebSocket {
   public readonly webSocketAPI: apigw.WebSocketApi
 
   constructor(scope: Construct, props: IAPIGatewayWebSocketProps) {
-    const apiName = `${config.projectName}-${props.name ?? ''}-websocket-api`
+    const apiName = `${config.projectName}${props.name ? `-${props.name}-` : '-'}websocket-api`
     this.webSocketAPI = new apigw.WebSocketApi(scope, apiName, {
       apiName,
       ...(props?.handlers?.connect && {
