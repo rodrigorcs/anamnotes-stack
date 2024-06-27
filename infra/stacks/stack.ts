@@ -16,6 +16,7 @@ import { HttpMethods } from '../lib/models/enums'
 import { APIGatewayWebSocket } from '../lib/constructs/api-gateway/websocket'
 import { DynamoDBAttributeType, DynamoDBTable } from '../lib/constructs/dynamodb'
 import { S3Bucket } from '../lib/constructs/s3'
+// import { PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
 export class AnamnotesStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -212,5 +213,12 @@ export class AnamnotesStack extends Stack {
     anamnotesTable.grantReadWriteData(websocketLambdas.summarize.lambdaFn)
 
     webSocketAPI.grantManageConnections(websocketLambdas.summarize.lambdaFn)
+
+    // websocketLambdas.summarize.lambdaFn.addToRolePolicy(
+    //   new PolicyStatement({
+    //     actions: ['execute-api:Invoke'],
+    //     resources: [`arn:aws:execute-api:*:*:${webSocketAPI.apiId}/*/*/*`],
+    //   }),
+    // )
   }
 }

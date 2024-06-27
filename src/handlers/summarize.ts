@@ -6,7 +6,7 @@ import { WebSocketConnectionsRepository } from '../repositories/WebSocketConnect
 import { logger } from '../common/powertools/logger'
 
 export const handler = async () => {
-  const websocketURL = `https://q5nwr2lnm7.execute-api.us-east-1.amazonaws.com/prod/@connections/prod`
+  const websocketURL = `https://q5nwr2lnm7.execute-api.us-east-1.amazonaws.com/prod`
   const client = new ApiGatewayManagementApiClient({ endpoint: websocketURL })
 
   const wsConnectionsRepository = new WebSocketConnectionsRepository()
