@@ -12,7 +12,7 @@ type TPartialPrimaryKeysParams = Pick<IWebSocketConnection, 'userId' | 'summariz
 
 const getPrimaryKeys = ({ userId, summarizationId, id }: TPrimaryKeysParams) => {
   return {
-    pk: createDBKey<IWebSocketConnectionKeys>([{ userId, summarizationId }]),
+    pk: createDBKey<IWebSocketConnectionKeys>([{ userId }, { summarizationId }]),
     sk: createDBKey<IWebSocketConnectionKeys>([{ wsConnectionId: id }]),
   }
 }
