@@ -153,5 +153,9 @@ export class AnamnotesStack extends Stack {
         connect: websocketLambdas.connect.lambdaFn,
       },
     })
+
+    // PERMISSIONS
+
+    anamnotesTable.grantReadWriteData(websocketLambdas.connect.lambdaFn)
   }
 }
