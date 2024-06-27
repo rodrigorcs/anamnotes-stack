@@ -198,7 +198,7 @@ export class AnamnotesStack extends Stack {
 
     // API GATEWAY - WEBSOCKET API
 
-    new APIGatewayWebSocket(this, {
+    const { webSocketAPI } = new APIGatewayWebSocket(this, {
       handlers: {
         connect: websocketLambdas.connect.lambdaFn,
         disconnect: websocketLambdas.disconnect.lambdaFn,
@@ -210,5 +210,7 @@ export class AnamnotesStack extends Stack {
     anamnotesTable.grantReadWriteData(websocketLambdas.connect.lambdaFn)
     anamnotesTable.grantReadWriteData(websocketLambdas.disconnect.lambdaFn)
     anamnotesTable.grantReadWriteData(websocketLambdas.summarize.lambdaFn)
+
+    webSocketAPI.grantManageConnections(websocketLambdas.summarize.lambdaFn)
   }
 }
