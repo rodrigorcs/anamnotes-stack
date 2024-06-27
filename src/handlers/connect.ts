@@ -5,8 +5,9 @@ import dayjs from 'dayjs'
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   logger.info('Received event', { event })
+  const wsConnectionsRepository = new WebSocketConnectionsRepository()
 
-  const createdConnection = new WebSocketConnectionsRepository().create({
+  const createdConnection = await wsConnectionsRepository.create({
     id: 'test-id',
     userId: 'test-userId',
     summarizationId: 'test-summarizationId',
