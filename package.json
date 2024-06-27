@@ -62,7 +62,9 @@
     "@middy/http-cors": "^5.4.1",
     "@middy/http-error-handler": "^5.4.1",
     "@middy/sqs-partial-batch-failure": "^5.3.2",
+    "dayjs": "^1.11.11",
     "dotenv": "^16.3.1",
+    "dynamoose": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "source-map-support": "^0.5.21"
   }

@@ -14,6 +14,7 @@ import { ExistingMachineImage } from '../lib/constructs/ec2/ami'
 import { ApplicationLoadBalancer } from '../lib/constructs/ec2/alb'
 import { ExistingStringSystemParameter } from '../lib/constructs/ssm'
 import { APIGatewayWebSocket } from '../lib/constructs/api-gateway/websocket'
+import { DynamoDBAttributeType, DynamoDBTable } from '../lib/constructs/dynamodb'
 
 export class AnamnotesStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -75,6 +76,14 @@ export class AnamnotesStack extends Stack {
       targets: [autoScalingGroup],
     })
 
+    // DYNAMODB
+
+    const { table: anamnotesTable } = new DynamoDBTable(this, {
+      partitionKey: { name: 'pk', type: DynamoDBAttributeType.STRING },
+      sortKey: { name: 'sk', type: DynamoDBAttributeType.STRING },
+      deletionProtection: true,
+    })
+
     // LAMBDAS
 
     const { functionMap: infraLambdas } = new GroupedLambdaFunctions(this, {
@@ -104,6 +113,7 @@ export class AnamnotesStack extends Stack {
           sourceCodePath: '../dist/handlers/connect',
           environment: {
             ...sharedLambdaEnvs,
+            TABLE_NAME: anamnotesTable.tableName,
           },
         },
       },
