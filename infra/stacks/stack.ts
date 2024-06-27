@@ -8,13 +8,14 @@ import {
   NestedApiResources,
 } from '../lib/constructs/api-gateway/rest'
 import { HttpMethods } from '../lib/models/enums'
-import { ExistingVPC } from '../lib/constructs/ec2/vpc'
-import { AutoScalingGroup } from '../lib/constructs/ec2/asg'
-import { ExistingMachineImage } from '../lib/constructs/ec2/ami'
-import { ApplicationLoadBalancer } from '../lib/constructs/ec2/alb'
-import { ExistingStringSystemParameter } from '../lib/constructs/ssm'
+// import { ExistingVPC } from '../lib/constructs/ec2/vpc'
+// import { AutoScalingGroup } from '../lib/constructs/ec2/asg'
+// import { ExistingMachineImage } from '../lib/constructs/ec2/ami'
+// import { ApplicationLoadBalancer } from '../lib/constructs/ec2/alb'
+// import { ExistingStringSystemParameter } from '../lib/constructs/ssm'
 import { APIGatewayWebSocket } from '../lib/constructs/api-gateway/websocket'
 import { DynamoDBAttributeType, DynamoDBTable } from '../lib/constructs/dynamodb'
+import { S3Bucket } from '../lib/constructs/s3'
 
 export class AnamnotesStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -22,15 +23,15 @@ export class AnamnotesStack extends Stack {
 
     // SYSTEM PARAMETERS
 
-    const { value: hfToken } = new ExistingStringSystemParameter(this, {
-      path: config.aws.ssm.hfToken,
-      fetchInSynthesisTime: true,
-    })
+    // const { value: hfToken } = new ExistingStringSystemParameter(this, {
+    //   path: config.aws.ssm.hfToken,
+    //   fetchInSynthesisTime: true,
+    // })
 
-    const { value: openaiApiKey } = new ExistingStringSystemParameter(this, {
-      path: config.aws.ssm.openaiApiKey,
-      fetchInSynthesisTime: true,
-    })
+    // const { value: openaiApiKey } = new ExistingStringSystemParameter(this, {
+    //   path: config.aws.ssm.openaiApiKey,
+    //   fetchInSynthesisTime: true,
+    // })
 
     // ENVS
 
@@ -40,40 +41,46 @@ export class AnamnotesStack extends Stack {
 
     // VPCS
 
-    const { vpc: existingVPC } = new ExistingVPC(this, {
-      vpcId: config.aws.ec2.vpc.vpcId,
-    })
+    // const { vpc: existingVPC } = new ExistingVPC(this, {
+    //   vpcId: config.aws.ec2.vpc.vpcId,
+    // })
 
     // MACHINE IMAGES
 
-    const { machineImage: existingMachineImage } = new ExistingMachineImage(this, {
-      name: config.aws.ec2.ami.imageName,
-    })
+    // const { machineImage: existingMachineImage } = new ExistingMachineImage(this, {
+    //   name: config.aws.ec2.ami.imageName,
+    // })
 
     // AUTO SCALING GROUPS
 
-    const { group: autoScalingGroup } = new AutoScalingGroup(this, {
-      name: 'api-instances',
-      vpc: existingVPC,
-      instanceType: 'g6.xlarge',
-      maxCapacity: 1,
-      minCapacity: 0,
-      machineImage: existingMachineImage,
-      keyPairName: config.aws.ec2.asg.keyPairName,
-      commandsOnBoot: [
-        'cd /.', // Go to root directory
-        'cd home/ec2-user/anamnotes', // Go to anamnotes directory
-        'sudo systemctl enable docker', // Enable docker
-        `sudo docker run --gpus all --ipc=host --ulimit memlock=-1 -d -p 8080:8080 -e HF_TOKEN='${hfToken}' -e OPENAI_API_KEY='${openaiApiKey}' anamnotes-api:v1.0`, // Run the docker container
-      ],
-    })
+    // const { group: autoScalingGroup } = new AutoScalingGroup(this, {
+    //   name: 'api-instances',
+    //   vpc: existingVPC,
+    //   instanceType: 'g6.xlarge',
+    //   maxCapacity: 1,
+    //   minCapacity: 0,
+    //   machineImage: existingMachineImage,
+    //   keyPairName: config.aws.ec2.asg.keyPairName,
+    //   commandsOnBoot: [
+    //     'cd /.', // Go to root directory
+    //     'cd home/ec2-user/anamnotes', // Go to anamnotes directory
+    //     'sudo systemctl enable docker', // Enable docker
+    //     `sudo docker run --gpus all --ipc=host --ulimit memlock=-1 -d -p 8080:8080 -e HF_TOKEN='${hfToken}' -e OPENAI_API_KEY='${openaiApiKey}' anamnotes-api:v1.0`, // Run the docker container
+    //   ],
+    // })
 
     // LOAD BALANCER
 
-    new ApplicationLoadBalancer(this, {
-      name: 'api',
-      vpc: existingVPC,
-      targets: [autoScalingGroup],
+    // new ApplicationLoadBalancer(this, {
+    //   name: 'api',
+    //   vpc: existingVPC,
+    //   targets: [autoScalingGroup],
+    // })
+
+    // S3 BUCKETS
+
+    const { bucket: audioChunksBucket } = new S3Bucket(this, {
+      name: 'audio-chunks',
     })
 
     // DYNAMODB
@@ -126,26 +133,57 @@ export class AnamnotesStack extends Stack {
             TABLE_NAME: anamnotesTable.tableName,
           },
         },
+        summarize: {
+          reservedConcurrentExecutions: 1,
+          memoryMB: 256,
+          timeoutSecs: 300,
+          sourceCodePath: '../dist/handlers/summarize',
+          environment: {
+            ...sharedLambdaEnvs,
+            TABLE_NAME: anamnotesTable.tableName,
+          },
+        },
       },
     })
 
     // API GATEWAY - REST API
 
-    const { restApi: api } = new APIGatewayRestApi(this, {
+    const { restApi } = new APIGatewayRestApi(this, {
       identitySources: [IdentitySource.header('Authorization')],
     })
 
-    const baseResourceV1 = api.root.addResource('v1')
+    const baseResourceV1 = restApi.root.addResource('v1')
+    const summarizationResource = baseResourceV1.addResource('{summarizationId}')
+    const audioChunkResource = summarizationResource.addResource('audio-chunk')
 
     new NestedApiResources(this, {
       baseResource: baseResourceV1,
       routes: [
         {
           resourcePath: ['prepare'],
-          integrations: [
+          lambdaIntegrations: [
             {
               method: HttpMethods.POST,
               handler: infraLambdas.startInstance,
+              apigwMethodOptions: {
+                operationName: 'Start instance',
+                apiKeyRequired: false,
+              },
+            },
+          ],
+        },
+      ],
+    })
+
+    new NestedApiResources(this, {
+      baseResource: audioChunkResource,
+      routes: [
+        {
+          resourcePath: ['audio-chunk'],
+          bucketIntegrations: [
+            {
+              method: HttpMethods.POST,
+              bucketName: audioChunksBucket.bucketName,
               apigwMethodOptions: {
                 operationName: 'Start instance',
                 apiKeyRequired: false,
@@ -169,5 +207,6 @@ export class AnamnotesStack extends Stack {
 
     anamnotesTable.grantReadWriteData(websocketLambdas.connect.lambdaFn)
     anamnotesTable.grantReadWriteData(websocketLambdas.disconnect.lambdaFn)
+    anamnotesTable.grantReadWriteData(websocketLambdas.summarize.lambdaFn)
   }
 }

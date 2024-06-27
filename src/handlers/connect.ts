@@ -10,7 +10,7 @@ export const handler: APIGatewayProxyWebsocketHandlerV2 =
     const wsConnectionsRepository = new WebSocketConnectionsRepository()
 
     const createdConnection = await wsConnectionsRepository.create({
-      id: 'test-id',
+      id: event.requestContext.connectionId,
       userId: 'test-userId',
       summarizationId: 'test-summarizationId',
       createdAt: dayjs(),

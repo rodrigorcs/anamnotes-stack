@@ -4,11 +4,10 @@ import {
   IWebSocketConnectionKeys,
 } from '../models/contracts/WebSocketConnection'
 import { WebSocketConnectionDBModel } from '../models/schemas/WebSocketConnection/model'
-import { PartialWithPick } from '../models/utils'
 
 type TPrimaryKeysParams = Pick<IWebSocketConnection, 'userId' | 'summarizationId' | 'id'>
 type TPartialPrimaryKeysParams = Pick<IWebSocketConnection, 'userId' | 'summarizationId'> &
-  PartialWithPick<IWebSocketConnection, 'id'>
+  Partial<Pick<IWebSocketConnection, 'id'>>
 
 const getPrimaryKeys = ({ userId, summarizationId, id }: TPrimaryKeysParams) => {
   return {

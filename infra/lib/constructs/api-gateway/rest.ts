@@ -11,16 +11,23 @@ import { LambdaFunction } from '../lambda'
 import { config } from '../../../config'
 import { CommonMetricOptions, Metric } from 'aws-cdk-lib/aws-cloudwatch'
 
-interface IIntegration {
+interface ILambdaIntegration {
   method: HttpMethods
   handler: LambdaFunction
   apigwMethodOptions: apigw.MethodOptions
   lambdaIntegrationOption?: apigw.LambdaIntegrationOptions
 }
 
+interface IBucketIntegration {
+  method: HttpMethods
+  bucketName: string
+  apigwMethodOptions: apigw.MethodOptions
+}
+
 interface IRoute {
   resourcePath: string[]
-  integrations: IIntegration[]
+  lambdaIntegrations?: ILambdaIntegration[]
+  bucketIntegrations?: IBucketIntegration[]
 }
 
 interface INestedApiProps {
@@ -51,7 +58,7 @@ export class NestedApiResources {
         })
       })
 
-      route.integrations.forEach((integration) => {
+      route.lambdaIntegrations?.forEach((integration) => {
         const apigwMethodOptions = {
           ...integration.apigwMethodOptions,
           authorizationType: props.requestAuthorizer
@@ -65,6 +72,26 @@ export class NestedApiResources {
         resource.addMethod(
           integration.method,
           new apigw.LambdaIntegration(handler, integration.lambdaIntegrationOption),
+          apigwMethodOptions,
+        )
+      })
+
+      route.bucketIntegrations?.forEach((integration) => {
+        const apigwMethodOptions = {
+          ...integration.apigwMethodOptions,
+          authorizationType: props.requestAuthorizer
+            ? apigw.AuthorizationType.CUSTOM
+            : apigw.AuthorizationType.NONE,
+          authorizer: props.requestAuthorizer,
+        }
+
+        resource.addMethod(
+          integration.method,
+          new apigw.AwsIntegration({
+            service: 's3',
+            integrationHttpMethod: integration.method,
+            path: integration.bucketName,
+          }),
           apigwMethodOptions,
         )
       })
