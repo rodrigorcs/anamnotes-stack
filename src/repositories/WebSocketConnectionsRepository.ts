@@ -1,3 +1,4 @@
+import { logger } from '../common/powertools/logger'
 import { createDBKey } from '../lib/helpers/dynamodb'
 import {
   IWebSocketConnection,
@@ -36,6 +37,7 @@ export class WebSocketConnectionsRepository {
 
   public get({ userId, summarizationId, id }: TPartialPrimaryKeysParams) {
     const { pk, sk } = getPartialPrimaryKeys({ userId, summarizationId, id })
+    logger.info('primary keys', { pk, sk })
     return WebSocketConnectionDBModel.query('pk')
       .eq(pk)
       .and()
