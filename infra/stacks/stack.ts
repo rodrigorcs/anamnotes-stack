@@ -116,6 +116,16 @@ export class AnamnotesStack extends Stack {
             TABLE_NAME: anamnotesTable.tableName,
           },
         },
+        disconnect: {
+          reservedConcurrentExecutions: 1,
+          memoryMB: 128,
+          timeoutSecs: 300,
+          sourceCodePath: '../dist/handlers/disconnect',
+          environment: {
+            ...sharedLambdaEnvs,
+            TABLE_NAME: anamnotesTable.tableName,
+          },
+        },
       },
     })
 
@@ -151,11 +161,13 @@ export class AnamnotesStack extends Stack {
     new APIGatewayWebSocket(this, {
       handlers: {
         connect: websocketLambdas.connect.lambdaFn,
+        disconnect: websocketLambdas.disconnect.lambdaFn,
       },
     })
 
     // PERMISSIONS
 
     anamnotesTable.grantReadWriteData(websocketLambdas.connect.lambdaFn)
+    anamnotesTable.grantReadWriteData(websocketLambdas.disconnect.lambdaFn)
   }
 }

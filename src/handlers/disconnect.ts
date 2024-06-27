@@ -1,7 +1,6 @@
 import { APIGatewayProxyWebsocketEventV2, APIGatewayProxyWebsocketHandlerV2 } from 'aws-lambda'
 import { logger } from '../common/powertools/logger'
 import { WebSocketConnectionsRepository } from '../repositories/WebSocketConnectionsRepository'
-import dayjs from 'dayjs'
 import { middyWrapper } from '../common/middy'
 
 export const handler: APIGatewayProxyWebsocketHandlerV2 =
@@ -9,11 +8,10 @@ export const handler: APIGatewayProxyWebsocketHandlerV2 =
     logger.info('Received event', { event })
     const wsConnectionsRepository = new WebSocketConnectionsRepository()
 
-    const createdConnection = await wsConnectionsRepository.create({
+    const createdConnection = await wsConnectionsRepository.delete({
       id: 'test-id',
       userId: 'test-userId',
       summarizationId: 'test-summarizationId',
-      createdAt: dayjs(),
     })
 
     logger.info('Created connection', { createdConnection })

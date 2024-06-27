@@ -45,4 +45,9 @@ export class WebSocketConnectionsRepository {
       .all()
       .exec()
   }
+
+  public delete({ userId, summarizationId, id }: TPrimaryKeysParams) {
+    const primaryKeys = getPrimaryKeys({ userId, summarizationId, id })
+    return WebSocketConnectionDBModel.delete(primaryKeys)
+  }
 }
