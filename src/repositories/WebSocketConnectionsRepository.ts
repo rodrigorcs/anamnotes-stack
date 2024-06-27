@@ -19,7 +19,7 @@ const getPrimaryKeys = ({ userId, summarizationId, id }: TPrimaryKeysParams) => 
 
 const getPartialPrimaryKeys = ({ userId, summarizationId, id }: TPartialPrimaryKeysParams) => {
   return {
-    pk: createDBKey<IWebSocketConnectionKeys>([{ userId, summarizationId }]),
+    pk: createDBKey<IWebSocketConnectionKeys>([{ userId }, { summarizationId }]),
     sk: createDBKey<IWebSocketConnectionKeys>([{ wsConnectionId: id }]),
   }
 }
