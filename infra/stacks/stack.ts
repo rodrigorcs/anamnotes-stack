@@ -79,9 +79,10 @@ export class AnamnotesStack extends Stack {
 
     // S3 BUCKETS
 
-    const { bucket: audioChunksBucket } = new S3Bucket(this, {
-      name: 'audio-chunks',
-    })
+    const { bucket: audioChunksBucket, apiGwProxyRole: audioChunksBucketApiGwProxyRole } =
+      new S3Bucket(this, {
+        name: 'audio-chunks',
+      })
 
     // DYNAMODB
 
@@ -182,12 +183,13 @@ export class AnamnotesStack extends Stack {
           resourcePath: ['audio-chunk'],
           bucketIntegrations: [
             {
-              method: HttpMethods.POST,
+              method: HttpMethods.PUT,
               bucketName: audioChunksBucket.bucketName,
               apigwMethodOptions: {
-                operationName: 'Start instance',
+                operationName: 'Upload audio chunk to bucket',
                 apiKeyRequired: false,
               },
+              role: audioChunksBucketApiGwProxyRole,
             },
           ],
         },

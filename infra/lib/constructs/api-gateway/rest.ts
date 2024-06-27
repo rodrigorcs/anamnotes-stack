@@ -4,6 +4,7 @@ import {
   aws_apigateway as apigw,
   aws_logs as logs,
   aws_certificatemanager as acm,
+  aws_iam as iam,
 } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { AppStage, HttpMethods } from '../../models/enums'
@@ -22,6 +23,7 @@ interface IBucketIntegration {
   method: HttpMethods
   bucketName: string
   apigwMethodOptions: apigw.MethodOptions
+  role: iam.Role
 }
 
 interface IRoute {
@@ -91,6 +93,9 @@ export class NestedApiResources {
             service: 's3',
             integrationHttpMethod: integration.method,
             path: integration.bucketName,
+            options: {
+              credentialsRole: integration.role,
+            },
           }),
           apigwMethodOptions,
         )
