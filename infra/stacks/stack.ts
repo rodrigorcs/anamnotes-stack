@@ -280,6 +280,7 @@ export class AnamnotesStack extends Stack {
 
     anamnotesTable.grantReadWriteData(websocketLambdas.connect.lambdaFn)
     anamnotesTable.grantReadWriteData(websocketLambdas.disconnect.lambdaFn)
+    anamnotesTable.grantReadWriteData(aiLambdas.transcribe.lambdaFn)
     anamnotesTable.grantReadWriteData(aiLambdas.summarize.lambdaFn)
 
     webSocketAPI.grantManageConnections(aiLambdas.summarize.lambdaFn)

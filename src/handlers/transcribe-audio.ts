@@ -6,9 +6,12 @@ import middy from '@middy/core'
 import sqsPartialBatchFailureMiddleware from '@middy/sqs-partial-batch-failure'
 import { OpenAI, toFile } from 'openai'
 import { downloadFileFromBucket } from '../lib/helpers/s3'
+import { ChunkTranscriptionsRepository } from '../repositories/ChunkTranscriptionsRepository'
+import dayjs from 'dayjs'
 
 const getRecordPromises = (event: SQSEvent) => {
   const recordPromises: Promise<string>[] = []
+  const chunkTranscriptionsRepository = new ChunkTranscriptionsRepository()
   for (const record of event.Records) {
     const promise = new Promise<string>(async (resolve, reject) => {
       try {
@@ -17,12 +20,28 @@ const getRecordPromises = (event: SQSEvent) => {
 
         for (const s3Record of s3Event.Records) {
           logger.debug('Ingested S3 record', { s3Record })
+          const bucketName = s3Record.s3.bucket.name
+          const objectKey = s3Record.s3.object.key
 
           const fileByteArray = await downloadFileFromBucket({
-            bucketName: s3Record.s3.bucket.name,
-            objectKey: s3Record.s3.object.key,
+            bucketName,
+            objectKey,
           })
-          const file = await toFile(fileByteArray, 'audio.webm')
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const [_userPath, summarizationPath, fileNameWithExtension] = objectKey.split('/')
+          const [fileName] = objectKey.split('.')
+          const summarizationId = summarizationPath.split('=').pop()
+          const chunkId = fileName.split('=').pop()
+          if (!chunkId) {
+            throw new Error('chunkId not found in file name, expected format: chunkId=1234')
+          }
+          if (!summarizationId) {
+            throw new Error(
+              'summarizationId not found in object key, expected format: userId=1234/summarizationId=1234',
+            )
+          }
+
+          const file = await toFile(fileByteArray, fileNameWithExtension)
 
           const openAIClient = new OpenAI()
 
@@ -30,6 +49,18 @@ const getRecordPromises = (event: SQSEvent) => {
             model: 'whisper-1',
             file,
             language: 'pt',
+          })
+
+          chunkTranscriptionsRepository.create({
+            id: chunkId,
+            userId: 'test-userId',
+            summarizationId,
+            contentSections: [
+              {
+                text: transcription.text,
+              },
+            ],
+            createdAt: dayjs(),
           })
 
           const successMessage = transcription.text
