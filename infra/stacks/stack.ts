@@ -160,6 +160,13 @@ export class AnamnotesStack extends Stack {
           memoryMB: 256,
           timeoutSecs: 300,
           sourceCodePath: '../dist/handlers/transcribe-audio',
+          eventSources: [
+            {
+              queueSource: {
+                queue: queues.audioChunksEvents.queue,
+              },
+            },
+          ],
           environment: {
             ...sharedLambdaEnvs,
             TABLE_NAME: anamnotesTable.tableName,
