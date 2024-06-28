@@ -6,7 +6,6 @@ import middy from '@middy/core'
 import sqsPartialBatchFailureMiddleware from '@middy/sqs-partial-batch-failure'
 import { OpenAI } from 'openai'
 import { downloadFileFromBucket } from '../lib/helpers/s3'
-import { createReadStream } from 'fs'
 
 const getRecordPromises = (event: SQSEvent) => {
   const recordPromises: Promise<string>[] = []
@@ -23,12 +22,14 @@ const getRecordPromises = (event: SQSEvent) => {
             bucketName: s3Record.s3.bucket.name,
             objectKey: s3Record.s3.object.key,
           })
+          const fileBlob = new Blob([fileBuffer], { type: 'audio/webm' })
+          const file = new File([fileBlob], `test-file.webm`, { type: 'audio/webm' })
 
           const openAIClient = new OpenAI()
 
           const transcription = await openAIClient.audio.transcriptions.create({
             model: 'whisper-1',
-            file: createReadStream(fileBuffer),
+            file,
             language: 'pt',
           })
 
