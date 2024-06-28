@@ -285,5 +285,6 @@ export class AnamnotesStack extends Stack {
     webSocketAPI.grantManageConnections(aiLambdas.summarize.lambdaFn)
 
     audioChunksBucket.grantPut(fileLambdas.getChunkUploadUrl.lambdaFn)
+    audioChunksBucket.grantRead(aiLambdas.transcribe.lambdaFn)
   }
 }
