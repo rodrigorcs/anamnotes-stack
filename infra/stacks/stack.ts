@@ -172,8 +172,9 @@ export class AnamnotesStack extends Stack {
     })
 
     const baseResourceV1 = restApi.root.addResource('v1')
-    const summarizationResource = baseResourceV1.addResource('{summarizationId}')
-    const audioChunksResource = summarizationResource.addResource('audio-chunk')
+    const summarizationsResource = baseResourceV1.addResource('summarizations')
+    const summarizationResource = summarizationsResource.addResource('{summarizationId}')
+    const audioChunksResource = summarizationResource.addResource('audio-chunks')
     const audioChunkResource = audioChunksResource.addResource('{chunkId}')
 
     new NestedApiResources(this, {
