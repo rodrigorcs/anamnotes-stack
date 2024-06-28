@@ -50,7 +50,7 @@ const getRecordPromises = (event: SQSEvent) => {
             logger.info('Transcribed content sections', { contentSections })
 
             try {
-              const chunkTranscriptionCreatedItem = chunkTranscriptionsRepository.create({
+              const chunkTranscriptionCreatedItem = await chunkTranscriptionsRepository.create({
                 id: chunkId,
                 userId: 'test-userId',
                 summarizationId,
