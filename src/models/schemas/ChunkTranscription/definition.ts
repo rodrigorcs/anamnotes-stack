@@ -19,21 +19,24 @@ export const chunkTranscriptionSchemaDefinition: TSchemaDefinition<IChunkTranscr
     required: true,
     schema: [
       {
-        start: {
-          type: Number,
-          required: false,
-        },
-        end: {
-          type: Number,
-          required: false,
-        },
-        text: {
-          type: String,
-          required: true,
-        },
-        speaker: {
-          type: String,
-          required: false,
+        type: Object,
+        schema: {
+          start: {
+            type: Number,
+            required: false,
+          },
+          end: {
+            type: Number,
+            required: false,
+          },
+          text: {
+            type: String,
+            required: true,
+          },
+          speaker: {
+            type: String,
+            required: false,
+          },
         },
       },
     ],
