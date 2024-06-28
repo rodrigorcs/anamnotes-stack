@@ -24,7 +24,9 @@ const getRecordPromises = (event: SQSEvent) => {
           })
           // const fileBlob = new Blob([fileBuffer], { type: 'audio/webm' })
           // const file = new File([fileBlob], `test-file.webm`, { type: 'audio/webm' })
-          const file = await toFile(fileBuffer, 'audio.webm')
+          const file = await toFile(fileBuffer, 'audio.webm', {
+            type: 'audio/webm',
+          })
 
           const openAIClient = new OpenAI()
 
