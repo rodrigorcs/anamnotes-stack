@@ -20,7 +20,7 @@ import { HttpMethods } from '../lib/models/enums'
 // import { ApplicationLoadBalancer } from '../lib/constructs/ec2/alb'
 // import { ExistingStringSystemParameter } from '../lib/constructs/ssm'
 import { APIGatewayWebSocket } from '../lib/constructs/api-gateway/websocket'
-import { DynamoDBAttributeType, DynamoDBTable } from '../lib/constructs/dynamodb'
+import { DynamoDBAttributeType, DynamoDBTable, StreamViewType } from '../lib/constructs/dynamodb'
 import { S3Bucket, S3EventType } from '../lib/constructs/s3'
 import { GroupedSQS } from '../lib/constructs/sqs'
 // import { PolicyStatement } from 'aws-cdk-lib/aws-iam'
@@ -120,6 +120,7 @@ export class AnamnotesStack extends Stack {
       partitionKey: { name: 'pk', type: DynamoDBAttributeType.STRING },
       sortKey: { name: 'sk', type: DynamoDBAttributeType.STRING },
       deletionProtection: true,
+      streamType: StreamViewType.NEW_IMAGE,
     })
 
     // ENVS
