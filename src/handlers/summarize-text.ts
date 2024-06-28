@@ -1,33 +1,30 @@
-/* eslint-disable no-async-promise-executor */
-import { SQSEvent } from 'aws-lambda'
+import {
+  ApiGatewayManagementApiClient,
+  PostToConnectionCommand,
+} from '@aws-sdk/client-apigatewaymanagementapi'
+import { WebSocketConnectionsRepository } from '../repositories/WebSocketConnectionsRepository'
 import { logger } from '../common/powertools/logger'
-import 'reflect-metadata'
-import middy from '@middy/core'
-import sqsPartialBatchFailureMiddleware from '@middy/sqs-partial-batch-failure'
 
-const getRecordPromises = (event: SQSEvent) => {
-  const recordPromises: Promise<string>[] = []
-  for (const record of event.Records) {
-    const promise = new Promise<string>(async (resolve, reject) => {
-      try {
-        logger.debug('Ingested record', { record })
+export const handler = async () => {
+  const websocketURL = `https://q5nwr2lnm7.execute-api.us-east-1.amazonaws.com/prod`
+  const client = new ApiGatewayManagementApiClient({ endpoint: websocketURL })
 
-        const successMessage = `Success`
-        logger.info(successMessage)
-        resolve(successMessage)
-      } catch (error) {
-        reject(error)
-      }
-    })
-    recordPromises.push(promise)
+  const wsConnectionsRepository = new WebSocketConnectionsRepository()
+  const connections = await wsConnectionsRepository.get({
+    userId: 'test-userId',
+    summarizationId: 'test-summarizationId',
+  })
+  const connectionId = connections[0].id
+
+  const requestParams = {
+    ConnectionId: connectionId,
+    Data: 'Hello!',
   }
-  return recordPromises
-}
 
-const eventHandler = async (event: SQSEvent): Promise<PromiseSettledResult<string>[]> => {
-  logger.debug('Ingested event', { event })
-  const recordPromises = getRecordPromises(event)
-  return Promise.allSettled(recordPromises)
-}
+  logger.info('connectionId', { connections, connectionId })
 
-export const handler = middy(eventHandler).use(sqsPartialBatchFailureMiddleware())
+  const command = new PostToConnectionCommand(requestParams)
+  const response = await client.send(command)
+
+  return response
+}
