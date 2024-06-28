@@ -196,6 +196,7 @@ type TFunctionMap<T> = {
 export enum ELambdaGroupTypes {
   INFRA = 'infra',
   WEBSOCKET = 'websocket',
+  FILE = 'file',
 }
 
 interface Props<T> {

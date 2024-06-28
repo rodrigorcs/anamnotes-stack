@@ -80,10 +80,9 @@ export class AnamnotesStack extends Stack {
 
     // S3 BUCKETS
 
-    const { bucket: audioChunksBucket, apiGwProxyRole: audioChunksBucketApiGwProxyRole } =
-      new S3Bucket(this, {
-        name: 'audio-chunks',
-      })
+    const { bucket: audioChunksBucket } = new S3Bucket(this, {
+      name: 'audio-chunks',
+    })
 
     // DYNAMODB
 
@@ -148,6 +147,24 @@ export class AnamnotesStack extends Stack {
       },
     })
 
+    const { functionMap: fileLambdas } = new GroupedLambdaFunctions(this, {
+      type: ELambdaGroupTypes.FILE,
+      sharedEnvs: sharedLambdaEnvs,
+      functionProps: {
+        getChunkUploadUrl: {
+          reservedConcurrentExecutions: 1,
+          memoryMB: 128,
+          timeoutSecs: 300,
+          sourceCodePath: '../dist/handlers/get-chunk-upload-url',
+          environment: {
+            ...sharedLambdaEnvs,
+            TABLE_NAME: anamnotesTable.tableName,
+            BUCKET_NAME: audioChunksBucket.bucketName,
+          },
+        },
+      },
+    })
+
     // API GATEWAY - REST API
 
     const { restApi } = new APIGatewayRestApi(this, {
@@ -156,7 +173,8 @@ export class AnamnotesStack extends Stack {
 
     const baseResourceV1 = restApi.root.addResource('v1')
     const summarizationResource = baseResourceV1.addResource('{summarizationId}')
-    const audioChunkResource = summarizationResource.addResource('audio-chunk')
+    const audioChunksResource = summarizationResource.addResource('audio-chunk')
+    const audioChunkResource = audioChunksResource.addResource('{chunkId}')
 
     new NestedApiResources(this, {
       baseResource: baseResourceV1,
@@ -181,16 +199,15 @@ export class AnamnotesStack extends Stack {
       baseResource: audioChunkResource,
       routes: [
         {
-          resourcePath: ['audio-chunk'],
-          bucketIntegrations: [
+          resourcePath: ['uploadUrl'],
+          lambdaIntegrations: [
             {
-              method: HttpMethods.PUT,
-              bucketName: audioChunksBucket.bucketName,
+              method: HttpMethods.GET,
+              handler: fileLambdas.getChunkUploadUrl,
               apigwMethodOptions: {
                 operationName: 'Upload audio chunk to bucket',
                 apiKeyRequired: false,
               },
-              role: audioChunksBucketApiGwProxyRole,
             },
           ],
         },
@@ -214,11 +231,6 @@ export class AnamnotesStack extends Stack {
 
     webSocketAPI.grantManageConnections(websocketLambdas.summarize.lambdaFn)
 
-    // websocketLambdas.summarize.lambdaFn.addToRolePolicy(
-    //   new PolicyStatement({
-    //     actions: ['execute-api:Invoke'],
-    //     resources: [`arn:aws:execute-api:*:*:${webSocketAPI.apiId}/*/*/*`],
-    //   }),
-    // )
+    audioChunksBucket.grantPut(fileLambdas.getChunkUploadUrl.lambdaFn)
   }
 }
