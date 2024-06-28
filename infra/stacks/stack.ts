@@ -15,7 +15,8 @@ import { HttpMethods } from '../lib/models/enums'
 // import { ExistingStringSystemParameter } from '../lib/constructs/ssm'
 import { APIGatewayWebSocket } from '../lib/constructs/api-gateway/websocket'
 import { DynamoDBAttributeType, DynamoDBTable } from '../lib/constructs/dynamodb'
-import { S3Bucket } from '../lib/constructs/s3'
+import { S3Bucket, S3EventType } from '../lib/constructs/s3'
+import { GroupedSQS } from '../lib/constructs/sqs'
 // import { PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
 export class AnamnotesStack extends Stack {
@@ -33,12 +34,6 @@ export class AnamnotesStack extends Stack {
     //   path: config.aws.ssm.openaiApiKey,
     //   fetchInSynthesisTime: true,
     // })
-
-    // ENVS
-
-    const sharedLambdaEnvs = {
-      STAGE: config.stage,
-    }
 
     // VPCS
 
@@ -78,10 +73,39 @@ export class AnamnotesStack extends Stack {
     //   targets: [autoScalingGroup],
     // })
 
+    // SQS QUEUES
+
+    const { sqsMap: dlqQueues } = new GroupedSQS(this, {
+      sqsProps: {
+        audioChunksEventsDLQ: {
+          queueName: 'audio-chunks-events-dlq',
+          visibilityTimeout: 300,
+        },
+      },
+    })
+
+    const { sqsMap: queues } = new GroupedSQS(this, {
+      sqsProps: {
+        audioChunksEvents: {
+          queueName: 'audio-chunks-events',
+          visibilityTimeout: 300,
+          dlq: { queue: dlqQueues.audioChunksEventsDLQ.queue, maxReceiveCount: 3 },
+        },
+      },
+    })
+
     // S3 BUCKETS
 
     const { bucket: audioChunksBucket } = new S3Bucket(this, {
       name: 'audio-chunks',
+      eventDestinations: [
+        {
+          s3Destination: {
+            eventType: S3EventType.OBJECT_CREATED,
+            queue: queues.audioChunksEvents.queue,
+          },
+        },
+      ],
     })
 
     // DYNAMODB
@@ -92,23 +116,13 @@ export class AnamnotesStack extends Stack {
       deletionProtection: true,
     })
 
-    // LAMBDAS
+    // ENVS
 
-    const { functionMap: infraLambdas } = new GroupedLambdaFunctions(this, {
-      type: ELambdaGroupTypes.INFRA,
-      sharedEnvs: sharedLambdaEnvs,
-      functionProps: {
-        startInstance: {
-          reservedConcurrentExecutions: 1,
-          memoryMB: 256,
-          timeoutSecs: 300,
-          sourceCodePath: '../dist/handlers/start-instance',
-          environment: {
-            ...sharedLambdaEnvs,
-          },
-        },
-      },
-    })
+    const sharedLambdaEnvs = {
+      STAGE: config.stage,
+    }
+
+    // LAMBDAS
 
     const { functionMap: websocketLambdas } = new GroupedLambdaFunctions(this, {
       type: ELambdaGroupTypes.WEBSOCKET,
@@ -118,7 +132,7 @@ export class AnamnotesStack extends Stack {
           reservedConcurrentExecutions: 1,
           memoryMB: 128,
           timeoutSecs: 300,
-          sourceCodePath: '../dist/handlers/connect',
+          sourceCodePath: '../dist/handlers/connect-ws',
           environment: {
             ...sharedLambdaEnvs,
             TABLE_NAME: anamnotesTable.tableName,
@@ -128,7 +142,24 @@ export class AnamnotesStack extends Stack {
           reservedConcurrentExecutions: 1,
           memoryMB: 128,
           timeoutSecs: 300,
-          sourceCodePath: '../dist/handlers/disconnect',
+          sourceCodePath: '../dist/handlers/disconnect-ws',
+          environment: {
+            ...sharedLambdaEnvs,
+            TABLE_NAME: anamnotesTable.tableName,
+          },
+        },
+      },
+    })
+
+    const { functionMap: aiLambdas } = new GroupedLambdaFunctions(this, {
+      type: ELambdaGroupTypes.AI,
+      sharedEnvs: sharedLambdaEnvs,
+      functionProps: {
+        transcribe: {
+          reservedConcurrentExecutions: 1,
+          memoryMB: 256,
+          timeoutSecs: 300,
+          sourceCodePath: '../dist/handlers/transcribe-audio',
           environment: {
             ...sharedLambdaEnvs,
             TABLE_NAME: anamnotesTable.tableName,
@@ -138,7 +169,7 @@ export class AnamnotesStack extends Stack {
           reservedConcurrentExecutions: 1,
           memoryMB: 256,
           timeoutSecs: 300,
-          sourceCodePath: '../dist/handlers/summarize',
+          sourceCodePath: '../dist/handlers/summarize-text',
           environment: {
             ...sharedLambdaEnvs,
             TABLE_NAME: anamnotesTable.tableName,
@@ -178,25 +209,6 @@ export class AnamnotesStack extends Stack {
     const audioChunkResource = audioChunksResource.addResource('{chunkId}')
 
     new NestedApiResources(this, {
-      baseResource: baseResourceV1,
-      routes: [
-        {
-          resourcePath: ['prepare'],
-          lambdaIntegrations: [
-            {
-              method: HttpMethods.POST,
-              handler: infraLambdas.startInstance,
-              apigwMethodOptions: {
-                operationName: 'Start instance',
-                apiKeyRequired: false,
-              },
-            },
-          ],
-        },
-      ],
-    })
-
-    new NestedApiResources(this, {
       baseResource: audioChunkResource,
       routes: [
         {
@@ -228,9 +240,9 @@ export class AnamnotesStack extends Stack {
 
     anamnotesTable.grantReadWriteData(websocketLambdas.connect.lambdaFn)
     anamnotesTable.grantReadWriteData(websocketLambdas.disconnect.lambdaFn)
-    anamnotesTable.grantReadWriteData(websocketLambdas.summarize.lambdaFn)
+    anamnotesTable.grantReadWriteData(aiLambdas.summarize.lambdaFn)
 
-    webSocketAPI.grantManageConnections(websocketLambdas.summarize.lambdaFn)
+    webSocketAPI.grantManageConnections(aiLambdas.summarize.lambdaFn)
 
     audioChunksBucket.grantPut(fileLambdas.getChunkUploadUrl.lambdaFn)
   }

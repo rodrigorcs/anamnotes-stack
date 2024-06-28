@@ -197,6 +197,7 @@ export enum ELambdaGroupTypes {
   INFRA = 'infra',
   WEBSOCKET = 'websocket',
   FILE = 'file',
+  AI = 'ai',
 }
 
 interface Props<T> {
