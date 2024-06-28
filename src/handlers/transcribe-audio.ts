@@ -4,7 +4,7 @@ import { logger } from '../common/powertools/logger'
 import 'reflect-metadata'
 import middy from '@middy/core'
 import sqsPartialBatchFailureMiddleware from '@middy/sqs-partial-batch-failure'
-import { OpenAI } from 'openai'
+import { OpenAI, toFile } from 'openai'
 import { downloadFileFromBucket } from '../lib/helpers/s3'
 
 const getRecordPromises = (event: SQSEvent) => {
@@ -22,8 +22,9 @@ const getRecordPromises = (event: SQSEvent) => {
             bucketName: s3Record.s3.bucket.name,
             objectKey: s3Record.s3.object.key,
           })
-          const fileBlob = new Blob([fileBuffer], { type: 'audio/webm' })
-          const file = new File([fileBlob], `test-file.webm`, { type: 'audio/webm' })
+          // const fileBlob = new Blob([fileBuffer], { type: 'audio/webm' })
+          // const file = new File([fileBlob], `test-file.webm`, { type: 'audio/webm' })
+          const file = await toFile(fileBuffer, 'audio.webm')
 
           const openAIClient = new OpenAI()
 
