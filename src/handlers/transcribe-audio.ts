@@ -22,9 +22,9 @@ const getRecordPromises = (event: SQSEvent) => {
             bucketName: s3Record.s3.bucket.name,
             objectKey: s3Record.s3.object.key,
           })
-          // const fileBlob = new Blob([fileBuffer], { type: 'audio/webm' })
+          const fileBlob = new Blob([fileBuffer], { type: 'audio/webm' })
           // const file = new File([fileBlob], `test-file.webm`, { type: 'audio/webm' })
-          const file = await toFile(fileBuffer, 'audio.webm', {
+          const file = await toFile(fileBlob, 'audio.webm', {
             type: 'audio/webm',
           })
 
