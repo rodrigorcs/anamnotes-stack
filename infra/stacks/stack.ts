@@ -18,7 +18,7 @@ import { HttpMethods } from '../lib/models/enums'
 // import { AutoScalingGroup } from '../lib/constructs/ec2/asg'
 // import { ExistingMachineImage } from '../lib/constructs/ec2/ami'
 // import { ApplicationLoadBalancer } from '../lib/constructs/ec2/alb'
-// import { ExistingStringSystemParameter } from '../lib/constructs/ssm'
+import { ExistingStringSystemParameter } from '../lib/constructs/ssm'
 import { APIGatewayWebSocket } from '../lib/constructs/api-gateway/websocket'
 import { DynamoDBAttributeType, DynamoDBTable, StreamViewType } from '../lib/constructs/dynamodb'
 import { S3Bucket, S3EventType } from '../lib/constructs/s3'
@@ -36,10 +36,10 @@ export class AnamnotesStack extends Stack {
     //   fetchInSynthesisTime: true,
     // })
 
-    // const { value: openaiApiKey } = new ExistingStringSystemParameter(this, {
-    //   path: config.aws.ssm.openaiApiKey,
-    //   fetchInSynthesisTime: true,
-    // })
+    const { value: openaiApiKey } = new ExistingStringSystemParameter(this, {
+      path: config.aws.ssm.openaiApiKey,
+      fetchInSynthesisTime: true,
+    })
 
     // VPCS
 
@@ -177,6 +177,7 @@ export class AnamnotesStack extends Stack {
           environment: {
             ...sharedLambdaEnvs,
             TABLE_NAME: anamnotesTable.tableName,
+            OPENAI_API_KEY: openaiApiKey,
           },
         },
         summarize: {
