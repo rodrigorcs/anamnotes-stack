@@ -1,6 +1,6 @@
 import { Dayjs } from 'dayjs'
 
-interface IChunkTranscriptionSection {
+export interface IChunkTranscriptionSection {
   start?: number
   end?: number
   text: string

@@ -4,10 +4,10 @@ import { logger } from '../common/powertools/logger'
 import 'reflect-metadata'
 import middy from '@middy/core'
 import sqsPartialBatchFailureMiddleware from '@middy/sqs-partial-batch-failure'
-import { OpenAI, toFile } from 'openai'
 import { downloadFileFromBucket } from '../lib/helpers/s3'
 import { ChunkTranscriptionsRepository } from '../repositories/ChunkTranscriptionsRepository'
 import dayjs from 'dayjs'
+import { AIProviderSwitcher, AIProviders } from '../switchers/AISwitcher'
 
 const getRecordPromises = (event: SQSEvent) => {
   const recordPromises: Promise<string>[] = []
@@ -41,29 +41,31 @@ const getRecordPromises = (event: SQSEvent) => {
             )
           }
 
-          const file = await toFile(fileByteArray, fileNameWithExtension)
+          try {
+            const AIProvider = AIProviderSwitcher.getProvider(AIProviders.OPEN_AI)
+            const contentSections = await AIProvider.transcribe({
+              fileByteArray,
+              fileName: fileNameWithExtension,
+            })
+            logger.info('Transcribed content sections', { contentSections })
 
-          const openAIClient = new OpenAI()
+            try {
+              const chunkTranscriptionCreatedItem = chunkTranscriptionsRepository.create({
+                id: chunkId,
+                userId: 'test-userId',
+                summarizationId,
+                contentSections,
+                createdAt: dayjs(),
+              })
+              logger.info('Created chunk transcription', { chunkTranscriptionCreatedItem })
+            } catch (error) {
+              logger.info('Error when creating chunk transcription', { error })
+            }
+          } catch (error) {
+            logger.error('Error when transcribing content sections', { error })
+          }
 
-          const transcription = await openAIClient.audio.transcriptions.create({
-            model: 'whisper-1',
-            file,
-            language: 'pt',
-          })
-
-          chunkTranscriptionsRepository.create({
-            id: chunkId,
-            userId: 'test-userId',
-            summarizationId,
-            contentSections: [
-              {
-                text: transcription.text,
-              },
-            ],
-            createdAt: dayjs(),
-          })
-
-          const successMessage = transcription.text
+          const successMessage = 'Success'
           logger.info(successMessage)
           resolve(successMessage)
         }
