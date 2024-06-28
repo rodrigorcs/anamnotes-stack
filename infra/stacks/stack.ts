@@ -1,7 +1,13 @@
 import { Stack, StackProps } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { config } from '../config'
-import { ELambdaGroupTypes, GroupedLambdaFunctions } from '../lib/constructs/lambda'
+import {
+  ELambdaGroupTypes,
+  FilterCriteria,
+  FilterRule,
+  GroupedLambdaFunctions,
+  StartingPosition,
+} from '../lib/constructs/lambda'
 import {
   APIGatewayRestApi,
   IdentitySource,
@@ -177,6 +183,31 @@ export class AnamnotesStack extends Stack {
           memoryMB: 256,
           timeoutSecs: 300,
           sourceCodePath: '../dist/handlers/summarize-text',
+          eventSources: [
+            {
+              dynamodbSource: {
+                table: anamnotesTable,
+                props: {
+                  startingPosition: StartingPosition.LATEST,
+                  filters: [
+                    FilterCriteria.filter({
+                      eventName: FilterRule.isEqual('INSERT'),
+                      dynamodb: {
+                        Keys: {
+                          sk: { S: FilterRule.beginsWith('chunkId#') },
+                        },
+                        NewImage: {
+                          isLastChunk: {
+                            S: FilterRule.isEqual('true'),
+                          },
+                        },
+                      },
+                    }),
+                  ],
+                },
+              },
+            },
+          ],
           environment: {
             ...sharedLambdaEnvs,
             TABLE_NAME: anamnotesTable.tableName,
