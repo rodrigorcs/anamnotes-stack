@@ -21,7 +21,7 @@ const getRecordPromises = (event: SQSEvent) => {
         for (const s3Record of s3Event.Records) {
           logger.debug('Ingested S3 record', { s3Record })
           const bucketName = s3Record.s3.bucket.name
-          const objectKey = s3Record.s3.object.key
+          const objectKey = encodeURIComponent(s3Record.s3.object.key)
 
           const fileByteArray = await downloadFileFromBucket({
             bucketName,
