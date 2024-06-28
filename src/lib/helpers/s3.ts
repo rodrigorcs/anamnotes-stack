@@ -8,7 +8,7 @@ export const downloadFileFromBucket = async ({
   bucketName: string
   objectKey: string
   clientConfig?: S3ClientConfig
-}): Promise<Buffer> => {
+}): Promise<Uint8Array> => {
   const s3Client = new S3Client(clientConfig ?? [])
   const getObjectCommand = new GetObjectCommand({
     Bucket: bucketName,
@@ -18,8 +18,7 @@ export const downloadFileFromBucket = async ({
   const { Body: fileStream } = await s3Client.send(getObjectCommand)
   if (!fileStream) throw new Error('No file stream available to download from source bucket')
 
-  const fileAsString = await fileStream.transformToString()
-  const sourceFileBuffer = Buffer.from(fileAsString)
+  const fileAsByteArray = await fileStream.transformToByteArray()
 
-  return sourceFileBuffer
+  return fileAsByteArray
 }
