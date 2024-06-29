@@ -326,7 +326,7 @@ export class AnamnotesStack extends Stack {
       certificate: certificateManager.Certificate.fromCertificateArn(
         this,
         'ACM_Certificate',
-        'arn:aws:acm:us-east-1:735967209496:certificate/5e321e27-e0eb-497e-85c0-52e1e1d24adc',
+        'arn:aws:acm:us-east-1:735967209496:certificate/9ee75723-8800-45e2-a669-0d4b9935c8ac',
       ),
       endpointType: apigw.EndpointType.EDGE,
     })
