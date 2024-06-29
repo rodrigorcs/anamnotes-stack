@@ -106,7 +106,7 @@ export class NestedApiResources {
   }
 }
 
-interface GatewayDomainProps {
+interface IGatewayDomainProps {
   subdomainName: string
   domainName: string
   certificateId: string
@@ -116,7 +116,7 @@ interface GatewayDomainProps {
 
 interface APIGatewayRestApiProps {
   identitySources: string[]
-  gatewayDomain?: GatewayDomainProps
+  gatewayDomain?: IGatewayDomainProps
   handlers?: {
     requestAuthorizer?: LambdaFunction
   }
