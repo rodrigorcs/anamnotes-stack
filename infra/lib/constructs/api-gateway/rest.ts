@@ -199,6 +199,9 @@ export class APIGatewayRestApi {
         service: 'acm',
         resource: 'certificate',
         resourceName: props.gatewayDomain.certificateId,
+        account: config.stack.env.account,
+        region: config.stack.env.region,
+        partition: 'aws',
       })
 
       const customDomainName = `${props.gatewayDomain.subdomainName}.${props.gatewayDomain.domainName}`
