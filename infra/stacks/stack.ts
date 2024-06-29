@@ -213,6 +213,7 @@ export class AnamnotesStack extends Stack {
           environment: {
             ...sharedLambdaEnvs,
             TABLE_NAME: anamnotesTable.tableName,
+            OPENAI_API_KEY: openaiApiKey,
           },
         },
       },
