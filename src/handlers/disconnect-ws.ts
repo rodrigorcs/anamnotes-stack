@@ -11,7 +11,7 @@ export const handler: APIGatewayProxyWebsocketHandlerV2 =
     const createdConnection = await wsConnectionsRepository.delete({
       id: 'test-id',
       userId: 'test-userId',
-      summarizationId: event.requestContext.connectionId,
+      conversationId: event.requestContext.connectionId,
     })
 
     logger.info('Created connection', { createdConnection })

@@ -45,8 +45,12 @@ export const chunkTranscriptionSchemaDefinition: TSchemaDefinition<IChunkTranscr
     type: String,
     required: true,
   },
-  summarizationId: {
+  conversationId: {
     type: String,
+    required: true,
+  },
+  isLastChunk: {
+    type: Boolean,
     required: true,
   },
   createdAt: {

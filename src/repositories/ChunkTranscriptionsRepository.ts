@@ -6,20 +6,20 @@ import {
 } from '../models/contracts/ChunkTranscription'
 import { ChunkTranscriptionDBModel } from '../models/schemas/ChunkTranscription/model'
 
-type TPrimaryKeysParams = Pick<IChunkTranscription, 'userId' | 'summarizationId' | 'id'>
-type TPartialPrimaryKeysParams = Pick<IChunkTranscription, 'userId' | 'summarizationId'> &
+type TPrimaryKeysParams = Pick<IChunkTranscription, 'userId' | 'conversationId' | 'id'>
+type TPartialPrimaryKeysParams = Pick<IChunkTranscription, 'userId' | 'conversationId'> &
   Partial<Pick<IChunkTranscription, 'id'>>
 
-const getPrimaryKeys = ({ userId, summarizationId, id }: TPrimaryKeysParams) => {
+const getPrimaryKeys = ({ userId, conversationId, id }: TPrimaryKeysParams) => {
   return {
-    pk: createDBKey<IChunkTranscriptionKeys>([{ userId }, { summarizationId }]),
+    pk: createDBKey<IChunkTranscriptionKeys>([{ userId }, { conversationId }]),
     sk: createDBKey<IChunkTranscriptionKeys>([{ chunkId: id }, { transcription: undefined }]),
   }
 }
 
-const getPartialPrimaryKeys = ({ userId, summarizationId, id }: TPartialPrimaryKeysParams) => {
+const getPartialPrimaryKeys = ({ userId, conversationId, id }: TPartialPrimaryKeysParams) => {
   return {
-    pk: createDBKey<IChunkTranscriptionKeys>([{ userId }, { summarizationId }]),
+    pk: createDBKey<IChunkTranscriptionKeys>([{ userId }, { conversationId }]),
     sk: createDBKey<IChunkTranscriptionKeys>([
       { chunkId: id },
       ...(id ? [{ transcription: undefined }] : []),
@@ -29,17 +29,17 @@ const getPartialPrimaryKeys = ({ userId, summarizationId, id }: TPartialPrimaryK
 
 export class ChunkTranscriptionsRepository {
   public create(contract: IChunkTranscription) {
-    const { userId, summarizationId, id, createdAt, updatedAt } = contract
+    const { userId, conversationId, id, createdAt, updatedAt } = contract
     return ChunkTranscriptionDBModel.create({
       ...contract,
-      ...getPrimaryKeys({ userId, summarizationId, id }),
+      ...getPrimaryKeys({ userId, conversationId, id }),
       createdAt: createdAt.toISOString(),
       updatedAt: updatedAt ? updatedAt.toISOString() : undefined,
     })
   }
 
-  public get({ userId, summarizationId, id }: TPartialPrimaryKeysParams) {
-    const { pk, sk } = getPartialPrimaryKeys({ userId, summarizationId, id })
+  public get({ userId, conversationId, id }: TPartialPrimaryKeysParams) {
+    const { pk, sk } = getPartialPrimaryKeys({ userId, conversationId, id })
     logger.info('primary keys', { pk, sk })
     return ChunkTranscriptionDBModel.query('pk')
       .eq(pk)
@@ -50,8 +50,8 @@ export class ChunkTranscriptionsRepository {
       .exec()
   }
 
-  public delete({ userId, summarizationId, id }: TPrimaryKeysParams) {
-    const primaryKeys = getPrimaryKeys({ userId, summarizationId, id })
+  public delete({ userId, conversationId, id }: TPrimaryKeysParams) {
+    const primaryKeys = getPrimaryKeys({ userId, conversationId, id })
     return ChunkTranscriptionDBModel.delete(primaryKeys)
   }
 }

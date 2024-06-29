@@ -30,14 +30,14 @@ const getRecordPromises = (event: SQSEvent) => {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const [_userPath, summarizationPath, fileNameWithExtension] = objectKey.split('/')
           const [fileName] = objectKey.split('.')
-          const summarizationId = summarizationPath.split('=').pop()
+          const conversationId = summarizationPath.split('=').pop()
           const chunkId = fileName.split('=').pop()
           if (!chunkId) {
             throw new Error('chunkId not found in file name, expected format: chunkId=1234')
           }
-          if (!summarizationId) {
+          if (!conversationId) {
             throw new Error(
-              'summarizationId not found in object key, expected format: userId=1234/summarizationId=1234',
+              'conversationId not found in object key, expected format: userId=1234/conversationId=1234',
             )
           }
 
@@ -53,8 +53,9 @@ const getRecordPromises = (event: SQSEvent) => {
               const chunkTranscriptionCreatedItem = await chunkTranscriptionsRepository.create({
                 id: chunkId,
                 userId: 'test-userId',
-                summarizationId,
+                conversationId,
                 contentSections,
+                isLastChunk: true,
                 createdAt: dayjs(),
               })
               logger.info('Created chunk transcription', { chunkTranscriptionCreatedItem })

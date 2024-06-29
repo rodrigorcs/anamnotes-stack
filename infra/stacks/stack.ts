@@ -244,7 +244,7 @@ export class AnamnotesStack extends Stack {
 
     const baseResourceV1 = restApi.root.addResource('v1')
     const summarizationsResource = baseResourceV1.addResource('summarizations')
-    const summarizationResource = summarizationsResource.addResource('{summarizationId}')
+    const summarizationResource = summarizationsResource.addResource('{conversationId}')
     const audioChunksResource = summarizationResource.addResource('audioChunks')
     const audioChunkResource = audioChunksResource.addResource('{chunkId}')
 

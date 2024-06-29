@@ -8,13 +8,13 @@ import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 export const handler: APIGatewayProxyHandler = middyWrapper<APIGatewayProxyEvent>(async (event) => {
   try {
     const userId = 'test-userId'
-    const { summarizationId, chunkId } = event.pathParameters as Record<string, string>
+    const { conversationId, chunkId } = event.pathParameters as Record<string, string>
     const { BUCKET_NAME } = process.env as Record<string, string>
 
     const client = new S3Client()
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
-      Key: `userId=${userId}/summarizationId=${summarizationId}/chunkId=${chunkId}.webm`,
+      Key: `userId=${userId}/conversationId=${conversationId}/chunkId=${chunkId}.webm`,
     })
     const signedUrl = await getSignedUrl(client, command, { expiresIn: 3600 })
 

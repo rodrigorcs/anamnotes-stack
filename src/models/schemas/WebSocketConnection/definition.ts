@@ -18,7 +18,7 @@ export const webSocketConnectionSchemaDefinition: TSchemaDefinition<IWebSocketCo
     type: String,
     required: true,
   },
-  summarizationId: {
+  conversationId: {
     type: String,
     required: true,
   },

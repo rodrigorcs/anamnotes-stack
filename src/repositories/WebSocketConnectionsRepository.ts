@@ -6,37 +6,37 @@ import {
 } from '../models/contracts/WebSocketConnection'
 import { WebSocketConnectionDBModel } from '../models/schemas/WebSocketConnection/model'
 
-type TPrimaryKeysParams = Pick<IWebSocketConnection, 'userId' | 'summarizationId' | 'id'>
-type TPartialPrimaryKeysParams = Pick<IWebSocketConnection, 'userId' | 'summarizationId'> &
+type TPrimaryKeysParams = Pick<IWebSocketConnection, 'userId' | 'conversationId' | 'id'>
+type TPartialPrimaryKeysParams = Pick<IWebSocketConnection, 'userId' | 'conversationId'> &
   Partial<Pick<IWebSocketConnection, 'id'>>
 
-const getPrimaryKeys = ({ userId, summarizationId, id }: TPrimaryKeysParams) => {
+const getPrimaryKeys = ({ userId, conversationId, id }: TPrimaryKeysParams) => {
   return {
-    pk: createDBKey<IWebSocketConnectionKeys>([{ userId }, { summarizationId }]),
+    pk: createDBKey<IWebSocketConnectionKeys>([{ userId }, { conversationId }]),
     sk: createDBKey<IWebSocketConnectionKeys>([{ wsConnectionId: id }]),
   }
 }
 
-const getPartialPrimaryKeys = ({ userId, summarizationId, id }: TPartialPrimaryKeysParams) => {
+const getPartialPrimaryKeys = ({ userId, conversationId, id }: TPartialPrimaryKeysParams) => {
   return {
-    pk: createDBKey<IWebSocketConnectionKeys>([{ userId }, { summarizationId }]),
+    pk: createDBKey<IWebSocketConnectionKeys>([{ userId }, { conversationId }]),
     sk: createDBKey<IWebSocketConnectionKeys>([{ wsConnectionId: id }]),
   }
 }
 
 export class WebSocketConnectionsRepository {
   public create(contract: IWebSocketConnection) {
-    const { userId, summarizationId, id, createdAt, updatedAt } = contract
+    const { userId, conversationId, id, createdAt, updatedAt } = contract
     return WebSocketConnectionDBModel.create({
       ...contract,
-      ...getPrimaryKeys({ userId, summarizationId, id }),
+      ...getPrimaryKeys({ userId, conversationId, id }),
       createdAt: createdAt.toISOString(),
       updatedAt: updatedAt ? updatedAt.toISOString() : undefined,
     })
   }
 
-  public get({ userId, summarizationId, id }: TPartialPrimaryKeysParams) {
-    const { pk, sk } = getPartialPrimaryKeys({ userId, summarizationId, id })
+  public get({ userId, conversationId, id }: TPartialPrimaryKeysParams) {
+    const { pk, sk } = getPartialPrimaryKeys({ userId, conversationId, id })
     logger.info('primary keys', { pk, sk })
     return WebSocketConnectionDBModel.query('pk')
       .eq(pk)
@@ -47,8 +47,8 @@ export class WebSocketConnectionsRepository {
       .exec()
   }
 
-  public delete({ userId, summarizationId, id }: TPrimaryKeysParams) {
-    const primaryKeys = getPrimaryKeys({ userId, summarizationId, id })
+  public delete({ userId, conversationId, id }: TPrimaryKeysParams) {
+    const primaryKeys = getPrimaryKeys({ userId, conversationId, id })
     return WebSocketConnectionDBModel.delete(primaryKeys)
   }
 }

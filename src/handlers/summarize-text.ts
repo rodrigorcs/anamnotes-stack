@@ -4,27 +4,50 @@ import {
 } from '@aws-sdk/client-apigatewaymanagementapi'
 import { WebSocketConnectionsRepository } from '../repositories/WebSocketConnectionsRepository'
 import { logger } from '../common/powertools/logger'
+import { ChunkTranscriptionsRepository } from '../repositories/ChunkTranscriptionsRepository'
+import { DynamoDBStreamHandler } from 'aws-lambda'
+import { unmarshall } from '@aws-sdk/util-dynamodb'
+import { IChunkTranscriptionEntity } from '../models/schemas/ChunkTranscription/schema'
 
-export const handler = async () => {
+export const handler: DynamoDBStreamHandler = async (event) => {
   const websocketURL = `https://q5nwr2lnm7.execute-api.us-east-1.amazonaws.com/prod`
   const client = new ApiGatewayManagementApiClient({ endpoint: websocketURL })
-
+  const chunkTranscriptionsRepository = new ChunkTranscriptionsRepository()
   const wsConnectionsRepository = new WebSocketConnectionsRepository()
-  const connections = await wsConnectionsRepository.get({
-    userId: 'test-userId',
-    summarizationId: 'test-summarizationId',
-  })
-  const connectionId = connections[0].id
 
-  const requestParams = {
-    ConnectionId: connectionId,
-    Data: 'Hello!',
+  // TODO: Add try/catch
+  logger.info('Ingested event', { event })
+  for (const record of event.Records) {
+    logger.info('Ingested record', { record })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const parsedRecord = record as any // TODO: Add schema validator
+    const chunkTranscriptionEntity = unmarshall(
+      parsedRecord.dynamodb.NewImage,
+    ) as IChunkTranscriptionEntity
+    logger.info('Entity after unmarshall', { chunkTranscriptionEntity })
+
+    const { userId, conversationId, id: chunkId } = chunkTranscriptionEntity
+
+    const chunkTranscriptions = await chunkTranscriptionsRepository.get({
+      conversationId,
+      userId,
+      id: chunkId,
+    })
+
+    const connections = await wsConnectionsRepository.get({
+      userId: 'test-userId',
+      conversationId,
+    })
+    const connectionId = connections[0].id
+
+    const requestParams = {
+      ConnectionId: connectionId,
+      Data: chunkTranscriptions[0].contentSections[0].text,
+    }
+
+    logger.info('connectionId', { connections, connectionId })
+
+    const command = new PostToConnectionCommand(requestParams)
+    await client.send(command)
   }
-
-  logger.info('connectionId', { connections, connectionId })
-
-  const command = new PostToConnectionCommand(requestParams)
-  const response = await client.send(command)
-
-  return response
 }

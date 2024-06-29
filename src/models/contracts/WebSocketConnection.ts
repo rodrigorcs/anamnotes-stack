@@ -3,7 +3,7 @@ import { Dayjs } from 'dayjs'
 export interface IWebSocketConnection {
   id: string
   userId: string
-  summarizationId: string
+  conversationId: string
   createdAt: Dayjs
   updatedAt?: Dayjs
 }

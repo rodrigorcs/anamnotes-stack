@@ -10,8 +10,9 @@ export interface IChunkTranscriptionSection {
 export interface IChunkTranscription {
   id: string
   userId: string
-  summarizationId: string
+  conversationId: string
   contentSections: IChunkTranscriptionSection[]
+  isLastChunk: boolean
   createdAt: Dayjs
   updatedAt?: Dayjs
 }
