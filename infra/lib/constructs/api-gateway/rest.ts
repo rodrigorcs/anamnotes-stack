@@ -205,7 +205,7 @@ export class APIGatewayRestApi {
           domainName: customDomainName,
           certificate: acm.Certificate.fromCertificateArn(
             scope,
-            `${config.projectName}-${props.gatewayDomain.certificateId.toLowerCase()}`,
+            `${config.projectName}-${props.gatewayDomain.subdomainName}-${props.gatewayDomain.certificateId.toLowerCase()}-certificate`,
             certificateARN,
           ),
           endpointType: props.gatewayDomain.endpointType,

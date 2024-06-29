@@ -13,12 +13,12 @@ export class CNameRecord extends Construct {
   public readonly cNameRecord: route53.CnameRecord
 
   constructor(scope: Construct, props: ICNameRecordProps) {
-    const cdkId = `${config.projectName}-${props.hostedZoneId}-cname-record`
+    const cdkId = `${config.projectName}-${props.hostedZoneId}-${props.recordName}-cname-record`
     super(scope, cdkId)
 
     const hostedZone = route53.HostedZone.fromHostedZoneAttributes(
       this,
-      `${config.projectName}-${props.hostedZoneId}-hosted-zone`,
+      `${config.projectName}-${props.hostedZoneId}-${props.recordName}-hosted-zone`,
       {
         hostedZoneId: props.hostedZoneId,
         zoneName: props.hostedZoneName,
