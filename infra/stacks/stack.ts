@@ -1,4 +1,10 @@
-import { Stack, StackProps } from 'aws-cdk-lib'
+import {
+  Stack,
+  StackProps,
+  aws_apigateway as apigw,
+  aws_certificatemanager as certificateManager,
+  aws_route53 as route53,
+} from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { config } from '../config'
 import {
@@ -311,6 +317,37 @@ export class AnamnotesStack extends Stack {
         connect: websocketLambdas.connect.lambdaFn,
         disconnect: websocketLambdas.disconnect.lambdaFn,
       },
+    })
+
+    // ROUTE 53
+
+    const customDomain = new apigw.DomainName(this, 'customDomain', {
+      domainName: 'api.anamnotes.com',
+      certificate: certificateManager.Certificate.fromCertificateArn(
+        this,
+        'ACM_Certificate',
+        'arn:aws:acm:us-east-1:735967209496:certificate/5e321e27-e0eb-497e-85c0-52e1e1d24adc',
+      ),
+      endpointType: apigw.EndpointType.EDGE,
+    })
+
+    // Associate the Custom domain that we created with new APIGateway using BasePathMapping:
+    new apigw.BasePathMapping(this, 'CustomBasePathMapping', {
+      domainName: customDomain,
+      restApi: restApi,
+    })
+
+    // Get a reference to AN EXISTING hosted zone using the HOSTED_ZONE_ID. You can get this from route53
+    const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
+      hostedZoneId: 'Z0448513YG2VMTOLT2NK',
+      zoneName: 'anamnotes.com',
+    })
+
+    // Finally, add a CName record in the hosted zone with a value of the new custom domain that was created above:
+    new route53.CnameRecord(this, 'ApiGatewayRecordSet', {
+      zone: hostedZone,
+      recordName: 'api',
+      domainName: customDomain.domainNameAliasDomainName,
     })
 
     // PERMISSIONS
