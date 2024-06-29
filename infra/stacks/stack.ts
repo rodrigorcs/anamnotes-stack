@@ -1,10 +1,4 @@
-import {
-  Stack,
-  StackProps,
-  aws_apigateway as apigw,
-  aws_certificatemanager as certificateManager,
-  aws_route53 as route53,
-} from 'aws-cdk-lib'
+import { Stack, StackProps } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { config } from '../config'
 import {
@@ -16,20 +10,16 @@ import {
 } from '../lib/constructs/lambda'
 import {
   APIGatewayRestApi,
+  EndpointType,
   IdentitySource,
   NestedApiResources,
 } from '../lib/constructs/api-gateway/rest'
 import { HttpMethods } from '../lib/models/enums'
-// import { ExistingVPC } from '../lib/constructs/ec2/vpc'
-// import { AutoScalingGroup } from '../lib/constructs/ec2/asg'
-// import { ExistingMachineImage } from '../lib/constructs/ec2/ami'
-// import { ApplicationLoadBalancer } from '../lib/constructs/ec2/alb'
 import { ExistingStringSystemParameter } from '../lib/constructs/ssm'
 import { APIGatewayWebSocket } from '../lib/constructs/api-gateway/websocket'
 import { DynamoDBAttributeType, DynamoDBTable, StreamViewType } from '../lib/constructs/dynamodb'
 import { S3Bucket, S3EventType } from '../lib/constructs/s3'
 import { GroupedSQS } from '../lib/constructs/sqs'
-// import { PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
 export class AnamnotesStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -37,53 +27,10 @@ export class AnamnotesStack extends Stack {
 
     // SYSTEM PARAMETERS
 
-    // const { value: hfToken } = new ExistingStringSystemParameter(this, {
-    //   path: config.aws.ssm.hfToken,
-    //   fetchInSynthesisTime: true,
-    // })
-
     const { value: openaiApiKey } = new ExistingStringSystemParameter(this, {
       path: config.aws.ssm.openaiApiKey,
       fetchInSynthesisTime: true,
     })
-
-    // VPCS
-
-    // const { vpc: existingVPC } = new ExistingVPC(this, {
-    //   vpcId: config.aws.ec2.vpc.vpcId,
-    // })
-
-    // MACHINE IMAGES
-
-    // const { machineImage: existingMachineImage } = new ExistingMachineImage(this, {
-    //   name: config.aws.ec2.ami.imageName,
-    // })
-
-    // AUTO SCALING GROUPS
-
-    // const { group: autoScalingGroup } = new AutoScalingGroup(this, {
-    //   name: 'api-instances',
-    //   vpc: existingVPC,
-    //   instanceType: 'g6.xlarge',
-    //   maxCapacity: 1,
-    //   minCapacity: 0,
-    //   machineImage: existingMachineImage,
-    //   keyPairName: config.aws.ec2.asg.keyPairName,
-    //   commandsOnBoot: [
-    //     'cd /.', // Go to root directory
-    //     'cd home/ec2-user/anamnotes', // Go to anamnotes directory
-    //     'sudo systemctl enable docker', // Enable docker
-    //     `sudo docker run --gpus all --ipc=host --ulimit memlock=-1 -d -p 8080:8080 -e HF_TOKEN='${hfToken}' -e OPENAI_API_KEY='${openaiApiKey}' anamnotes-api:v1.0`, // Run the docker container
-    //   ],
-    // })
-
-    // LOAD BALANCER
-
-    // new ApplicationLoadBalancer(this, {
-    //   name: 'api',
-    //   vpc: existingVPC,
-    //   targets: [autoScalingGroup],
-    // })
 
     // SQS QUEUES
 
@@ -264,6 +211,13 @@ export class AnamnotesStack extends Stack {
 
     const { restApi } = new APIGatewayRestApi(this, {
       identitySources: [IdentitySource.header('Authorization')],
+      gatewayDomain: {
+        domainName: config.aws.route53.domainName,
+        subdomainName: 'api',
+        hostedZoneId: config.aws.route53.hostedZoneId,
+        certificateId: config.aws.acm.certificateId,
+        endpointType: EndpointType.EDGE,
+      },
     })
 
     const baseResourceV1 = restApi.root.addResource('v1')
@@ -317,37 +271,6 @@ export class AnamnotesStack extends Stack {
         connect: websocketLambdas.connect.lambdaFn,
         disconnect: websocketLambdas.disconnect.lambdaFn,
       },
-    })
-
-    // ROUTE 53
-
-    const customDomain = new apigw.DomainName(this, 'customDomain', {
-      domainName: 'api.anamnotes.com',
-      certificate: certificateManager.Certificate.fromCertificateArn(
-        this,
-        'ACM_Certificate',
-        'arn:aws:acm:us-east-1:735967209496:certificate/9ee75723-8800-45e2-a669-0d4b9935c8ac',
-      ),
-      endpointType: apigw.EndpointType.EDGE,
-    })
-
-    // Associate the Custom domain that we created with new APIGateway using BasePathMapping:
-    new apigw.BasePathMapping(this, 'CustomBasePathMapping', {
-      domainName: customDomain,
-      restApi: restApi,
-    })
-
-    // Get a reference to AN EXISTING hosted zone using the HOSTED_ZONE_ID. You can get this from route53
-    const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
-      hostedZoneId: 'Z0448513YG2VMTOLT2NK',
-      zoneName: 'anamnotes.com',
-    })
-
-    // Finally, add a CName record in the hosted zone with a value of the new custom domain that was created above:
-    new route53.CnameRecord(this, 'ApiGatewayRecordSet', {
-      zone: hostedZone,
-      recordName: 'api',
-      domainName: customDomain.domainNameAliasDomainName,
     })
 
     // PERMISSIONS

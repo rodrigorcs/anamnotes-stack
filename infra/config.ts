@@ -27,23 +27,16 @@ export const config = {
   projectName,
   stage,
   aws: {
-    sm: {
-      apiEnvsSecretName: `${projectName}-api-envs`,
-    },
     ssm: {
       hfToken: `${ssmParametersRoot}/hf-token`,
       openaiApiKey: `${ssmParametersRoot}/openai-api-key`,
     },
-    ec2: {
-      vpc: {
-        vpcId: 'vpc-03e671a621d004593',
-      },
-      ami: {
-        imageName: 'sandbox-anamnotes-api-image-v3',
-      },
-      asg: {
-        keyPairName: 'sandbox-anamnotes-api-instance-keypair',
-      },
+    acm: {
+      certificateId: '4da2fd45-4693-483e-84d3-d506823b9b48',
+    },
+    route53: {
+      hostedZoneId: 'Z0448513YG2VMTOLT2NK',
+      domainName: 'anamnotes.com',
     },
   },
   stack: {

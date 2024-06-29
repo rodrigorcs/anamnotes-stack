@@ -1,6 +1,7 @@
 import {
   Duration,
   RemovalPolicy,
+  Arn,
   aws_apigateway as apigw,
   aws_logs as logs,
   aws_certificatemanager as acm,
@@ -11,6 +12,7 @@ import { AppStage, HttpMethods } from '../../models/enums'
 import { LambdaFunction } from '../lambda'
 import { config } from '../../../config'
 import { CommonMetricOptions, Metric } from 'aws-cdk-lib/aws-cloudwatch'
+import { CNameRecord } from '../route53'
 
 interface ILambdaIntegration {
   method: HttpMethods
@@ -104,18 +106,20 @@ export class NestedApiResources {
   }
 }
 
+interface GatewayDomainProps {
+  subdomainName: string
+  domainName: string
+  certificateId: string
+  hostedZoneId: string
+  endpointType?: apigw.EndpointType
+}
+
 interface APIGatewayRestApiProps {
   identitySources: string[]
   gatewayDomain?: GatewayDomainProps
   handlers?: {
     requestAuthorizer?: LambdaFunction
   }
-}
-
-interface GatewayDomainProps {
-  subdomainName: string
-  domainName: string
-  certificate: acm.ICertificate
 }
 
 export class APIGatewayRestApi {
@@ -181,6 +185,45 @@ export class APIGatewayRestApi {
       )
       requestLambdaAuthorizer._attachToApi(this.restApi)
       this.requestLambdaAuthorizer = requestLambdaAuthorizer
+    }
+
+    if (props.gatewayDomain) {
+      new CNameRecord(scope, {
+        domainName: props.gatewayDomain.domainName,
+        recordName: props.gatewayDomain.subdomainName,
+        hostedZoneId: props.gatewayDomain.hostedZoneId,
+        hostedZoneName: props.gatewayDomain.domainName,
+      })
+
+      const certificateARN = Arn.format({
+        service: 'acm',
+        resource: 'certificate',
+        resourceName: props.gatewayDomain.certificateId,
+      })
+
+      const customDomainName = `${props.gatewayDomain.subdomainName}.${props.gatewayDomain.domainName}`
+      const customDomain = new apigw.DomainName(
+        scope,
+        `${config.projectName}-${customDomainName.replace('.', '-')}`,
+        {
+          domainName: customDomainName,
+          certificate: acm.Certificate.fromCertificateArn(
+            scope,
+            `${config.projectName}-${props.gatewayDomain.certificateId.toLowerCase()}`,
+            certificateARN,
+          ),
+          endpointType: props.gatewayDomain.endpointType,
+        },
+      )
+
+      new apigw.BasePathMapping(
+        scope,
+        `${config.projectName}-${customDomainName.replace('.', '-')}-mapping`,
+        {
+          domainName: customDomain,
+          restApi: this.restApi,
+        },
+      )
     }
 
     this.restApi.addGatewayResponse('AccessDenied', {
@@ -282,3 +325,4 @@ export class ExistingAPIGatewayRestApiResource {
 }
 
 export const IdentitySource = apigw.IdentitySource
+export const EndpointType = apigw.EndpointType
