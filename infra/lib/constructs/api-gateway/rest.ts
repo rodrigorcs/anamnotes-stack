@@ -188,13 +188,6 @@ export class APIGatewayRestApi {
     }
 
     if (props.gatewayDomain) {
-      new CNameRecord(scope, {
-        domainName: props.gatewayDomain.domainName,
-        recordName: props.gatewayDomain.subdomainName,
-        hostedZoneId: props.gatewayDomain.hostedZoneId,
-        hostedZoneName: props.gatewayDomain.domainName,
-      })
-
       const certificateARN = Arn.format({
         service: 'acm',
         resource: 'certificate',
@@ -227,6 +220,13 @@ export class APIGatewayRestApi {
           restApi: this.restApi,
         },
       )
+
+      new CNameRecord(scope, {
+        domainName: customDomain.domainNameAliasDomainName,
+        recordName: props.gatewayDomain.subdomainName,
+        hostedZoneId: props.gatewayDomain.hostedZoneId,
+        hostedZoneName: props.gatewayDomain.domainName,
+      })
     }
 
     this.restApi.addGatewayResponse('AccessDenied', {
