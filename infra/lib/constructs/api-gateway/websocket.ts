@@ -7,7 +7,7 @@ import {
 } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { config } from '../../../config'
-import { CNameRecord } from '../route53'
+// import { CNameRecord } from '../route53'
 
 interface IGatewayDomainProps {
   subdomainName: string
@@ -92,12 +92,12 @@ export class APIGatewayWebSocket {
         },
       )
 
-      new CNameRecord(scope, {
-        domainName: customDomain.name,
-        recordName: props.gatewayDomain.subdomainName,
-        hostedZoneId: props.gatewayDomain.hostedZoneId,
-        hostedZoneName: props.gatewayDomain.domainName,
-      })
+      // new CNameRecord(scope, {
+      //   domainName: customDomain.name,
+      //   recordName: props.gatewayDomain.subdomainName,
+      //   hostedZoneId: props.gatewayDomain.hostedZoneId,
+      //   hostedZoneName: props.gatewayDomain.domainName,
+      // })
     }
   }
 }
