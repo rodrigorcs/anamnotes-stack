@@ -10,7 +10,7 @@ import {
 } from '../lib/constructs/lambda'
 import {
   APIGatewayRestApi,
-  // EndpointType,
+  EndpointType,
   IdentitySource,
   NestedApiResources,
 } from '../lib/constructs/api-gateway/rest'
@@ -211,13 +211,13 @@ export class AnamnotesStack extends Stack {
 
     const { restApi } = new APIGatewayRestApi(this, {
       identitySources: [IdentitySource.header('Authorization')],
-      // gatewayDomain: {
-      //   domainName: config.aws.route53.domainName,
-      //   subdomainName: 'api',
-      //   hostedZoneId: config.aws.route53.hostedZoneId,
-      //   certificateId: config.aws.acm.certificateId,
-      //   endpointType: EndpointType.EDGE,
-      // },
+      gatewayDomain: {
+        domainName: config.aws.route53.domainName,
+        subdomainName: 'api',
+        hostedZoneId: config.aws.route53.hostedZoneId,
+        certificateId: config.aws.acm.certificateId,
+        endpointType: EndpointType.EDGE,
+      },
     })
 
     const baseResourceV1 = restApi.root.addResource('v1')
