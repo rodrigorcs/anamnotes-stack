@@ -38,8 +38,12 @@ export const handler: DynamoDBStreamHandler = async (event) => {
 
     logger.info('chunkTranscriptions', { chunkTranscriptions })
 
+    const contentSections = chunkTranscriptions.flatMap(
+      (chunkTranscription) => chunkTranscription.contentSections,
+    )
+
     const summarizedSections = await AIProvider.summarize({
-      contentSections: chunkTranscriptions[0].contentSections,
+      contentSections,
     })
 
     logger.info('Summarized content', { summarizedSections })
