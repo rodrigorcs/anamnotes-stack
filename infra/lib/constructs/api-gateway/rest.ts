@@ -221,12 +221,14 @@ export class APIGatewayRestApi {
         },
       )
 
-      new CNameRecord(scope, {
+      const cNameRecord = new CNameRecord(scope, {
         domainName: customDomain.domainNameAliasDomainName,
         recordName: props.gatewayDomain.subdomainName,
         hostedZoneId: props.gatewayDomain.hostedZoneId,
         hostedZoneName: props.gatewayDomain.domainName,
       })
+
+      cNameRecord.node.addDependency(customDomain)
     }
 
     this.restApi.addGatewayResponse('AccessDenied', {
