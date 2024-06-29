@@ -7,6 +7,7 @@ import { middyWrapper } from '../common/middy'
 export const handler: APIGatewayProxyWebsocketHandlerV2 =
   middyWrapper<APIGatewayProxyWebsocketEventV2>(async (event) => {
     logger.info('Received event', { event })
+    console.log('Received event', { event })
     const wsConnectionsRepository = new WebSocketConnectionsRepository()
 
     const createdConnection = await wsConnectionsRepository.create({
