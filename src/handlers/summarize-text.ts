@@ -35,6 +35,8 @@ export const handler: DynamoDBStreamHandler = async (event) => {
       id: chunkId,
     })
 
+    logger.info('chunkTranscriptions', { chunkTranscriptions })
+
     const openaiClient = new OpenAI()
     const response = await openaiClient.chat.completions.create({
       model: 'gpt-4o',
