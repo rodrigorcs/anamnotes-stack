@@ -1,14 +1,11 @@
-import { APIGatewayProxyWebsocketEventV2 as DefaultEvent, Handler } from 'aws-lambda'
 import { logger } from '../common/powertools/logger'
 import { WebSocketConnectionsRepository } from '../repositories/WebSocketConnectionsRepository'
 import dayjs from 'dayjs'
 import { middyWrapper } from '../common/middy'
-
-interface APIGatewayProxyWebsocketEventV2 extends DefaultEvent {
-  queryStringParameters?: Record<string, string>
-  multiValueQueryStringParameters?: Record<string, string[]>
-}
-type APIGatewayProxyWebsocketHandlerV2 = Handler<APIGatewayProxyWebsocketEventV2, void>
+import {
+  APIGatewayProxyWebsocketEventV2,
+  APIGatewayProxyWebsocketHandlerV2,
+} from '../models/events/WebsocketEventV2'
 
 export const handler: APIGatewayProxyWebsocketHandlerV2 =
   middyWrapper<APIGatewayProxyWebsocketEventV2>(async (event) => {
