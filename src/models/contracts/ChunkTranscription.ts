@@ -25,5 +25,5 @@ export interface ICreateChunkTranscription
 
 export interface IChunkTranscriptionKeys extends ICreateChunkTranscription {
   chunkId: string
-  transcription: string
+  transcription: undefined
 }

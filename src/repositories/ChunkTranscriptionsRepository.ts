@@ -1,4 +1,3 @@
-import { logger } from '../common/powertools/logger'
 import { createDBKey } from '../lib/helpers/dynamodb'
 import {
   IChunkTranscription,
@@ -40,7 +39,6 @@ export class ChunkTranscriptionsRepository {
 
   public get({ userId, conversationId, id }: TPartialPrimaryKeysParams) {
     const { pk, sk } = getPartialPrimaryKeys({ userId, conversationId, id })
-    logger.info('primary keys', { pk, sk })
     return ChunkTranscriptionDBModel.query('pk')
       .eq(pk)
       .and()
