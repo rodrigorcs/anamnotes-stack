@@ -31,7 +31,10 @@ const getRecordPromises = (event: SQSEvent) => {
           const [_userPath, conversationPath, fileNameWithExtension] = objectKey.split('/')
           const [fileName] = objectKey.split('.')
           const conversationId = conversationPath.split('=').pop()
-          const chunkId = fileName.split('=').pop()
+          const [chunkIdPart, isLastChunkPart] = fileName.split('-')
+          const chunkId = chunkIdPart.split('=').pop()
+          const isLastChunk = isLastChunkPart.split('=').pop() === 'true'
+
           if (!chunkId) {
             throw new Error('chunkId not found in file name, expected format: chunkId=1234')
           }
@@ -55,7 +58,7 @@ const getRecordPromises = (event: SQSEvent) => {
                 userId: 'test-userId',
                 conversationId,
                 contentSections,
-                isLastChunk: true,
+                isLastChunk,
                 createdAt: dayjs(),
               })
               logger.info('Created chunk transcription', { chunkTranscriptionCreatedItem })
