@@ -200,7 +200,7 @@ export class AnamnotesStack extends Stack {
                         },
                         NewImage: {
                           isLastChunk: {
-                            S: FilterRule.isEqual('true'),
+                            BOOL: FilterRule.exists(),
                           },
                         },
                       },
