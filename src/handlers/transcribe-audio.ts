@@ -28,9 +28,9 @@ const getRecordPromises = (event: SQSEvent) => {
             objectKey,
           })
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const [_userPath, summarizationPath, fileNameWithExtension] = objectKey.split('/')
+          const [_userPath, conversationPath, fileNameWithExtension] = objectKey.split('/')
           const [fileName] = objectKey.split('.')
-          const conversationId = summarizationPath.split('=').pop()
+          const conversationId = conversationPath.split('=').pop()
           const chunkId = fileName.split('=').pop()
           if (!chunkId) {
             throw new Error('chunkId not found in file name, expected format: chunkId=1234')
