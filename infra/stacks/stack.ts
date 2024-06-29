@@ -237,6 +237,23 @@ export class AnamnotesStack extends Stack {
       },
     })
 
+    const { functionMap: conversationLambdas } = new GroupedLambdaFunctions(this, {
+      type: ELambdaGroupTypes.CONVERSATION,
+      sharedEnvs: sharedLambdaEnvs,
+      functionProps: {
+        startConversation: {
+          reservedConcurrentExecutions: 1,
+          memoryMB: 128,
+          timeoutSecs: 300,
+          sourceCodePath: '../dist/handlers/start-conversation',
+          environment: {
+            ...sharedLambdaEnvs,
+            TABLE_NAME: anamnotesTable.tableName,
+          },
+        },
+      },
+    })
+
     // API GATEWAY - REST API
 
     const { restApi } = new APIGatewayRestApi(this, {
@@ -248,6 +265,25 @@ export class AnamnotesStack extends Stack {
     const conversationResource = conversationsResource.addResource('{conversationId}')
     const audioChunksResource = conversationResource.addResource('audioChunks')
     const audioChunkResource = audioChunksResource.addResource('{chunkId}')
+
+    new NestedApiResources(this, {
+      baseResource: conversationsResource,
+      routes: [
+        {
+          resourcePath: [],
+          lambdaIntegrations: [
+            {
+              method: HttpMethods.POST,
+              handler: conversationLambdas.startConversation,
+              apigwMethodOptions: {
+                operationName: 'Start conversation',
+                apiKeyRequired: false,
+              },
+            },
+          ],
+        },
+      ],
+    })
 
     new NestedApiResources(this, {
       baseResource: audioChunkResource,
@@ -283,6 +319,7 @@ export class AnamnotesStack extends Stack {
     anamnotesTable.grantReadWriteData(websocketLambdas.disconnect.lambdaFn)
     anamnotesTable.grantReadWriteData(aiLambdas.transcribe.lambdaFn)
     anamnotesTable.grantReadWriteData(aiLambdas.summarize.lambdaFn)
+    anamnotesTable.grantReadWriteData(conversationLambdas.startConversation.lambdaFn)
 
     webSocketAPI.grantManageConnections(aiLambdas.summarize.lambdaFn)
 
