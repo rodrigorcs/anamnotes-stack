@@ -51,7 +51,7 @@ export class APIGatewayWebSocket {
     })
 
     const stageName = 'prod'
-    new apigw.WebSocketStage(scope, `${apiName}-${stageName}-stage`, {
+    const stage = new apigw.WebSocketStage(scope, `${apiName}-${stageName}-stage`, {
       webSocketApi: this.webSocketAPI,
       stageName,
       autoDeploy: true,
@@ -88,6 +88,7 @@ export class APIGatewayWebSocket {
         {
           domainName: customDomain,
           api: this.webSocketAPI,
+          stage,
         },
       )
 
