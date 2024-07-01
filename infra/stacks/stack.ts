@@ -18,7 +18,7 @@ import { HttpMethods } from '../lib/models/enums'
 import { ExistingStringSystemParameter } from '../lib/constructs/ssm'
 import { APIGatewayWebSocket } from '../lib/constructs/api-gateway/websocket'
 import { DynamoDBAttributeType, DynamoDBTable, StreamViewType } from '../lib/constructs/dynamodb'
-import { S3Bucket, S3EventType } from '../lib/constructs/s3'
+import { S3Bucket, S3EventType, S3HTTPMethods } from '../lib/constructs/s3'
 import { GroupedSQS } from '../lib/constructs/sqs'
 
 export class AnamnotesStack extends Stack {
@@ -57,6 +57,9 @@ export class AnamnotesStack extends Stack {
 
     const { bucket: audioChunksBucket } = new S3Bucket(this, {
       name: 'audio-chunks',
+      corsConfig: [
+        { allowedMethods: [S3HTTPMethods.PUT], allowedOrigins: ['*'], allowedHeaders: ['*'] },
+      ],
       eventDestinations: [
         {
           s3Destination: {

@@ -12,6 +12,7 @@ import { stageValue } from '../../helpers'
 interface IS3BucketProps {
   name: string
   encryption?: boolean
+  corsConfig?: s3.CorsRule[]
   eventDestinations?: {
     s3Destination?: {
       eventType: s3.EventType
@@ -36,6 +37,7 @@ export class S3Bucket {
       autoDeleteObjects: stageValue({ production: false }, true),
       removalPolicy: stageValue({ production: RemovalPolicy.RETAIN }, RemovalPolicy.DESTROY),
       encryption: props.encryption ? s3.BucketEncryption.S3_MANAGED : undefined,
+      cors: props.corsConfig,
     })
 
     for (const eventDestination of props.eventDestinations || []) {
@@ -50,3 +52,4 @@ export class S3Bucket {
 }
 
 export const S3EventType = s3.EventType
+export const S3HTTPMethods = s3.HttpMethods
