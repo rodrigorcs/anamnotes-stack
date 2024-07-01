@@ -29,7 +29,7 @@ const getRecordPromises = (event: SQSEvent) => {
           })
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const [_userPath, conversationPath, fileNameWithExtension] = objectKey.split('/')
-          const [fileName] = objectKey.split('.')
+          const [fileName] = fileNameWithExtension.split('.')
           const conversationId = conversationPath.split('=').pop()
           const [chunkIdPart, isLastChunkPart] = fileName.split('-')
           const chunkId = chunkIdPart.split('=').pop()
