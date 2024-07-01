@@ -156,7 +156,7 @@ export class AnamnotesStack extends Stack {
                         },
                         NewImage: {
                           isLastChunk: {
-                            BOOL: FilterRule.exists(),
+                            BOOL: true,
                           },
                         },
                       },
