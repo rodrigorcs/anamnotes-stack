@@ -15,7 +15,7 @@ export const handler: DynamoDBStreamHandler = async (event) => {
   const client = new ApiGatewayManagementApiClient({ endpoint: websocketURL })
   const chunkTranscriptionsRepository = new ChunkTranscriptionsRepository()
   const wsConnectionsRepository = new WebSocketConnectionsRepository()
-  const AIProvider = AIProviderSwitcher.getProvider(AIProviders.OPEN_AI)
+  const AIProvider = AIProviderSwitcher.getProvider(AIProviders.DUMMY)
 
   // TODO: Add try/catch
   logger.info('Ingested event', { event })
