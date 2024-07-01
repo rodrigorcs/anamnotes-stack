@@ -29,12 +29,11 @@ export const handler: DynamoDBStreamHandler = async (event) => {
       ) as IChunkTranscriptionEntity
       logger.info('Entity after unmarshall', { chunkTranscriptionEntity })
 
-      const { userId, conversationId, id: chunkId } = chunkTranscriptionEntity
+      const { userId, conversationId } = chunkTranscriptionEntity
 
       const chunkTranscriptions = await chunkTranscriptionsRepository.get({
         conversationId,
         userId,
-        id: chunkId,
       })
 
       logger.info('chunkTranscriptions', { chunkTranscriptions })
