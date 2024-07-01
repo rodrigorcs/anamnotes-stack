@@ -11,57 +11,61 @@ import { IChunkTranscriptionEntity } from '../models/schemas/ChunkTranscription/
 import { AIProviderSwitcher, AIProviders } from '../switchers/AISwitcher'
 
 export const handler: DynamoDBStreamHandler = async (event) => {
-  const websocketURL = `https://q5nwr2lnm7.execute-api.us-east-1.amazonaws.com/prod`
-  const client = new ApiGatewayManagementApiClient({ endpoint: websocketURL })
-  const chunkTranscriptionsRepository = new ChunkTranscriptionsRepository()
-  const wsConnectionsRepository = new WebSocketConnectionsRepository()
-  const AIProvider = AIProviderSwitcher.getProvider(AIProviders.DUMMY)
+  try {
+    const websocketURL = `https://q5nwr2lnm7.execute-api.us-east-1.amazonaws.com/prod`
+    const client = new ApiGatewayManagementApiClient({ endpoint: websocketURL })
+    const chunkTranscriptionsRepository = new ChunkTranscriptionsRepository()
+    const wsConnectionsRepository = new WebSocketConnectionsRepository()
+    const AIProvider = AIProviderSwitcher.getProvider(AIProviders.DUMMY)
 
-  // TODO: Add try/catch
-  logger.info('Ingested event', { event })
-  for (const record of event.Records) {
-    logger.info('Ingested record', { record })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parsedRecord = record as any // TODO: Add schema validator
-    const chunkTranscriptionEntity = unmarshall(
-      parsedRecord.dynamodb.NewImage,
-    ) as IChunkTranscriptionEntity
-    logger.info('Entity after unmarshall', { chunkTranscriptionEntity })
+    // TODO: Add try/catch
+    logger.info('Ingested event', { event })
+    for (const record of event.Records) {
+      logger.info('Ingested record', { record })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const parsedRecord = record as any // TODO: Add schema validator
+      const chunkTranscriptionEntity = unmarshall(
+        parsedRecord.dynamodb.NewImage,
+      ) as IChunkTranscriptionEntity
+      logger.info('Entity after unmarshall', { chunkTranscriptionEntity })
 
-    const { userId, conversationId, id: chunkId } = chunkTranscriptionEntity
+      const { userId, conversationId, id: chunkId } = chunkTranscriptionEntity
 
-    const chunkTranscriptions = await chunkTranscriptionsRepository.get({
-      conversationId,
-      userId,
-      id: chunkId,
-    })
+      const chunkTranscriptions = await chunkTranscriptionsRepository.get({
+        conversationId,
+        userId,
+        id: chunkId,
+      })
 
-    logger.info('chunkTranscriptions', { chunkTranscriptions })
+      logger.info('chunkTranscriptions', { chunkTranscriptions })
 
-    const contentSections = chunkTranscriptions.flatMap(
-      (chunkTranscription) => chunkTranscription.contentSections,
-    )
+      const contentSections = chunkTranscriptions.flatMap(
+        (chunkTranscription) => chunkTranscription.contentSections,
+      )
 
-    const summarizedSections = await AIProvider.summarize({
-      contentSections,
-    })
+      const summarizedSections = await AIProvider.summarize({
+        contentSections,
+      })
 
-    logger.info('Summarized content', { summarizedSections })
+      logger.info('Summarized content', { summarizedSections })
 
-    const connections = await wsConnectionsRepository.get({
-      userId: 'test-userId',
-      conversationId,
-    })
-    const connectionId = connections[0].id
+      const connections = await wsConnectionsRepository.get({
+        userId: 'test-userId',
+        conversationId,
+      })
+      const connectionId = connections[0].id
 
-    const requestParams = {
-      ConnectionId: connectionId,
-      Data: JSON.stringify(summarizedSections),
+      const requestParams = {
+        ConnectionId: connectionId,
+        Data: JSON.stringify(summarizedSections),
+      }
+
+      logger.info('connectionId', { connections, connectionId })
+
+      const command = new PostToConnectionCommand(requestParams)
+      await client.send(command)
     }
-
-    logger.info('connectionId', { connections, connectionId })
-
-    const command = new PostToConnectionCommand(requestParams)
-    await client.send(command)
+  } catch (error) {
+    logger.error('Error in handler', { error })
   }
 }
