@@ -155,9 +155,7 @@ export class AnamnotesStack extends Stack {
                           sk: { S: FilterRule.beginsWith('chunkId#') },
                         },
                         NewImage: {
-                          isLastChunk: {
-                            BOOL: true,
-                          },
+                          isLastChunk: true,
                         },
                       },
                     }),
