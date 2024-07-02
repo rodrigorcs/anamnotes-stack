@@ -23,7 +23,11 @@ export class OpenAIProvider implements IAIProvider {
       model: 'whisper-1',
       file,
       language: 'pt',
+      response_format: 'verbose_json',
+      timestamp_granularities: ['segment'],
     })
+
+    logger.info('Transcription', { transcription })
 
     return [
       {
