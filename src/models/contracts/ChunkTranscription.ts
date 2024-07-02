@@ -1,17 +1,22 @@
 import { Dayjs } from 'dayjs'
 
-export interface IChunkTranscriptionSection {
+export interface IChunkTranscriptionContentSection {
   start?: number
   end?: number
   text: string
   speaker?: string
 }
 
+export interface IChunkTranscriptionContent {
+  duration?: number
+  segments: IChunkTranscriptionContentSection[]
+}
+
 export interface IChunkTranscription {
   id: string
   userId: string
   conversationId: string
-  contentSections: IChunkTranscriptionSection[]
+  contentSections: IChunkTranscriptionContent
   isLastChunk: boolean
   createdAt: Dayjs
   updatedAt?: Dayjs

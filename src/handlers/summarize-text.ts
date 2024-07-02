@@ -38,7 +38,7 @@ export const handler: DynamoDBStreamHandler = async (event) => {
 
       logger.info('chunkTranscriptions', { chunkTranscriptions })
 
-      const contentSections = chunkTranscriptions.flatMap(
+      const contentSections = chunkTranscriptions.map(
         (chunkTranscription) => chunkTranscription.contentSections,
       )
 

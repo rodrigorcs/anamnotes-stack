@@ -6,11 +6,71 @@ import {
 
 export class DummyAIProvider implements IAIProvider {
   transcribe = async (): TTranscribeResponse => {
-    return [
-      {
-        text: 'Boa tarde, senhor. Qual é o seu nome? Meu nome é Roque. E o senhor tem quantos anos? Quarenta e seis. O senhor é daqui de Salvador mesmo? Sou sim. Mora onde? Águas Claras. Ah, entendi. E qual é a data de nascimento do senhor? Dezessete de dois mil novecentos e setenta e oito. E o grau de escolaridade? Terceiro grau. O senhor é casado ou solteiro? Sou casado. E o meu estômago tá doendo, moça. Deve ter voado aí. Entendi. E o que é que traz o senhor aqui hoje? O meu estômago tá doendo. Você é surda? Entendi. Entendi. E tá doendo em que parte do estômago? Aponte aí pra mim. Aqui no meio aqui, assim. Ah, tá. E começou há quanto tempo essa dor? Uma semana. Uma semana? E piorou hoje? Foi pior hoje. Senti náusea. Hum, entendi. Mas a dor continua igual? Continua igual. E se o senhor pudesse graduar essa dor de zero a dez? Sendo zero sem dor e dez a pior dor que o senhor já sentiu? Seis. E era seis desde o início? Sim. Entendi. E o senhor teve algum outro sintoma associado? Só náusea. Só náusea só hoje. Teve vômito, diarreia? Diarreia, sim. Diarreia só hoje também ou teve antes? Ontem e hoje. E a diarreia foi com sangue, com muco? Não. E o senhor comeu alguma coisa diferente do habitual esses dias? Comi. Comi uma carajé. Então acho que tava estragado. E o senhor comeu carajé quando começou a dor? Deve ter sido. Ah, uma semana? Ah, entendi. Tá doendo até hoje. Você comeu muito carajé, não foi não? Entendi. Eu vou passar os exames pro senhor, tá certo? Tem mais alguma queixa? Não, só isso mesmo. Ah, tá bom. Eu quero que você passe uma medicação na veia pra eu passar logo essa dor. Na veia? Mas não precisa disso tudo não. Eu vou fazer o exame físico no senhor, vou fazer o exame, passar o exame pro senhor e eu avalio o que eu vou passar pro senhor de medicação, tá bom? Tá certo. Tá bom.',
-      },
-    ]
+    return {
+      duration: 28.2,
+      segments: [
+        {
+          start: 0,
+          end: 5,
+          text: 'Boa tarde, senhor. Qual é o seu nome?',
+        },
+        {
+          start: 5,
+          end: 7,
+          text: 'Meu nome é Roque.',
+        },
+        {
+          start: 7,
+          end: 9,
+          text: 'E o senhor tem quantos anos?',
+        },
+        {
+          start: 9,
+          end: 10,
+          text: 'Quarenta e seis.',
+        },
+        {
+          start: 10,
+          end: 12,
+          text: 'O senhor é daqui de Salvador mesmo?',
+        },
+        {
+          start: 12,
+          end: 13,
+          text: 'Sou sim.',
+        },
+        {
+          start: 13,
+          end: 15,
+          text: 'Mora onde?',
+        },
+        {
+          start: 15,
+          end: 17,
+          text: 'Águas Claras.',
+        },
+        {
+          start: 17,
+          end: 22,
+          text: 'Ah, entendi. E qual a data de nascimento do senhor?',
+        },
+        {
+          start: 22,
+          end: 25,
+          text: 'Dezessete dois mil novecentos e oitenta e oito.',
+        },
+        {
+          start: 25,
+          end: 27,
+          text: 'E o grau de escolaridade?',
+        },
+        {
+          start: 27,
+          end: 29,
+          text: 'Terceiro grau.',
+        },
+      ],
+    }
   }
   summarize = async (): TSummarizeResponse => {
     return [

@@ -13,27 +13,55 @@ enum ESummarizeFunctionNames {
   THROW_ERROR = 'throwError',
 }
 
+interface IOpenAIVerboseSegment {
+  id: number
+  seek: number
+  start: number
+  end: number
+  text: string
+  tokens: number[]
+  temperature: number
+  avg_logprob: number
+  compression_ratio: number
+  no_speech_prob: number
+}
+
+interface IOpenAIVerboseTranscription {
+  task: string
+  language: string
+  duration: number
+  text: string
+  segments: IOpenAIVerboseSegment[]
+}
+
 export class OpenAIProvider implements IAIProvider {
   transcribe = async ({ fileByteArray, fileName }: ITranscribeParams): TTranscribeResponse => {
     const file = await toFile(fileByteArray, fileName)
 
     const openAIClient = new OpenAI()
 
-    const transcription = await openAIClient.audio.transcriptions.create({
+    const transcription = (await openAIClient.audio.transcriptions.create({
       model: 'whisper-1',
       file,
       language: 'pt',
       response_format: 'verbose_json',
       timestamp_granularities: ['segment'],
-    })
+    })) as IOpenAIVerboseTranscription
 
     logger.info('Transcription', { transcription })
 
-    return [
-      {
-        text: transcription.text,
-      },
-    ]
+    const parsedSegments = transcription.segments.map((segment) => ({
+      start: segment.start,
+      end: segment.end,
+      text: segment.text.trim(),
+    }))
+
+    const parsedTranscription = {
+      duration: transcription.duration,
+      segments: parsedSegments,
+    }
+
+    return parsedTranscription
   }
   summarize = async ({ contentSections }: ISummarizeParams): TSummarizeResponse => {
     logger.info('Summarizing content sections', { contentSections })
