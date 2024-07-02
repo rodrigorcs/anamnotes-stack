@@ -15,31 +15,41 @@ export const chunkTranscriptionSchemaDefinition: TSchemaDefinition<IChunkTranscr
     required: true,
   },
   contentSections: {
-    type: Array,
+    type: Object,
     required: true,
-    schema: [
-      {
-        type: Object,
-        schema: {
-          start: {
-            type: Number,
-            required: false,
-          },
-          end: {
-            type: Number,
-            required: false,
-          },
-          text: {
-            type: String,
-            required: true,
-          },
-          speaker: {
-            type: String,
-            required: false,
-          },
-        },
+    schema: {
+      duration: {
+        type: Number,
+        required: false,
       },
-    ],
+      segments: {
+        type: Array,
+        required: true,
+        schema: [
+          {
+            type: Object,
+            schema: {
+              start: {
+                type: Number,
+                required: false,
+              },
+              end: {
+                type: Number,
+                required: false,
+              },
+              text: {
+                type: String,
+                required: true,
+              },
+              speaker: {
+                type: String,
+                required: false,
+              },
+            },
+          },
+        ],
+      },
+    },
   },
   userId: {
     type: String,
