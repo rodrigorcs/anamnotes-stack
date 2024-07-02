@@ -9,12 +9,16 @@ import { DynamoDBStreamHandler } from 'aws-lambda'
 import { unmarshall } from '@aws-sdk/util-dynamodb'
 import { IChunkTranscriptionEntity } from '../models/schemas/ChunkTranscription/schema'
 import { AIProviderSwitcher, AIProviders } from '../switchers/AISwitcher'
+import { SummarizationsRepository } from '../repositories/SummarizationsRepository'
+import { v4 as uuid } from 'uuid'
+import dayjs from 'dayjs'
 
 export const handler: DynamoDBStreamHandler = async (event) => {
   try {
     const websocketURL = `https://q5nwr2lnm7.execute-api.us-east-1.amazonaws.com/prod`
     const client = new ApiGatewayManagementApiClient({ endpoint: websocketURL })
     const chunkTranscriptionsRepository = new ChunkTranscriptionsRepository()
+    const summarizationsRepository = new SummarizationsRepository()
     const wsConnectionsRepository = new WebSocketConnectionsRepository()
     const AIProvider = AIProviderSwitcher.getProvider(AIProviders.OPEN_AI)
 
@@ -49,7 +53,7 @@ export const handler: DynamoDBStreamHandler = async (event) => {
       logger.info('Summarized content', { summarizedSections })
 
       const connections = await wsConnectionsRepository.get({
-        userId: 'test-userId',
+        userId,
         conversationId,
       })
       const connectionId = connections[0].id
@@ -63,6 +67,16 @@ export const handler: DynamoDBStreamHandler = async (event) => {
 
       const command = new PostToConnectionCommand(requestParams)
       await client.send(command)
+
+      const createdSummarizationItem = await summarizationsRepository.create({
+        id: uuid(),
+        conversationId,
+        userId,
+        content: summarizedSections,
+        createdAt: dayjs(),
+      })
+
+      logger.info('Created summarization item', { createdSummarizationItem })
     }
   } catch (error) {
     logger.error('Error in handler', { error })
