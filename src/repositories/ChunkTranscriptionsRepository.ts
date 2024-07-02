@@ -12,7 +12,10 @@ type TPartialPrimaryKeysParams = Pick<IChunkTranscription, 'userId' | 'conversat
 const getPrimaryKeys = ({ userId, conversationId, id }: TPrimaryKeysParams) => {
   return {
     pk: createDBKey<IChunkTranscriptionKeys>([{ userId }, { conversationId }]),
-    sk: createDBKey<IChunkTranscriptionKeys>([{ chunkId: id }, { transcription: undefined }]),
+    sk: createDBKey<IChunkTranscriptionKeys>([
+      { chunkId: id.toString().padStart(3, '0') },
+      { transcription: undefined },
+    ]),
   }
 }
 
@@ -20,7 +23,7 @@ const getPartialPrimaryKeys = ({ userId, conversationId, id }: TPartialPrimaryKe
   return {
     pk: createDBKey<IChunkTranscriptionKeys>([{ userId }, { conversationId }]),
     sk: createDBKey<IChunkTranscriptionKeys>([
-      { chunkId: id },
+      { chunkId: id?.toString().padStart(3, '0') },
       ...(id ? [{ transcription: undefined }] : []),
     ]),
   }

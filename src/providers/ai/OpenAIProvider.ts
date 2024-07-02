@@ -6,6 +6,7 @@ import {
   TSummarizeResponse,
   TTranscribeResponse,
 } from '../../models/providers/AIProvider'
+import { logger } from '../../common/powertools/logger'
 
 enum ESummarizeFunctionNames {
   SUMMARIZE = 'summarize',
@@ -31,6 +32,8 @@ export class OpenAIProvider implements IAIProvider {
     ]
   }
   summarize = async ({ contentSections }: ISummarizeParams): TSummarizeResponse => {
+    logger.info('Summarizing content sections', { contentSections })
+
     const openAIClient = new OpenAI()
 
     const response = await openAIClient.chat.completions.create({
