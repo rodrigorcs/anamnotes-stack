@@ -7,12 +7,17 @@ import {
   TTranscribeResponse,
 } from '../../models/providers/AIProvider'
 import { logger } from '../../common/powertools/logger'
+import {
+  IChunkTranscriptionContent,
+  IChunkTranscriptionContentSection,
+} from '../../models/contracts/ChunkTranscription'
 
 enum ESummarizeFunctionNames {
   SUMMARIZE = 'summarize',
   THROW_ERROR = 'throwError',
 }
 
+// https://platform.openai.com/docs/api-reference/audio/verbose-json-object
 interface IOpenAIVerboseSegment {
   id: number
   seek: number
@@ -25,7 +30,6 @@ interface IOpenAIVerboseSegment {
   compression_ratio: number
   no_speech_prob: number
 }
-
 interface IOpenAIVerboseTranscription {
   task: string
   language: string
@@ -61,13 +65,17 @@ export class OpenAIProvider implements IAIProvider {
 
     logger.info('Transcription', { transcription })
 
-    const parsedSegments = transcription.segments.map((segment) => ({
-      start: segment.start,
-      end: segment.end,
-      text: segment.text.trim(),
-    }))
+    const parsedSegments: IChunkTranscriptionContentSection[] = transcription.segments.map(
+      (segment) => ({
+        start: segment.start,
+        end: segment.end,
+        text: segment.text.trim(),
+        confidence: Math.exp(segment.avg_logprob),
+        hasSpeech: segment.no_speech_prob <= 1 || segment.avg_logprob >= -1,
+      }),
+    )
 
-    const parsedTranscription = {
+    const parsedTranscription: IChunkTranscriptionContent = {
       duration: transcription.duration,
       segments: parsedSegments,
     }

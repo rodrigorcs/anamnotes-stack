@@ -45,6 +45,14 @@ export const chunkTranscriptionSchemaDefinition: TSchemaDefinition<IChunkTranscr
                 type: String,
                 required: false,
               },
+              confidence: {
+                type: Number,
+                required: false,
+              },
+              hasSpeech: {
+                type: Boolean,
+                required: false,
+              },
             },
           },
         ],

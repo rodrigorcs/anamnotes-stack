@@ -5,6 +5,8 @@ export interface IChunkTranscriptionContentSection {
   end?: number
   text: string
   speaker?: string
+  confidence?: number
+  hasSpeech?: boolean
 }
 
 export interface IChunkTranscriptionContent {

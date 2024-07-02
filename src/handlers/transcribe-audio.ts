@@ -54,7 +54,7 @@ const getRecordPromises = (event: SQSEvent) => {
           const previousContext = previousTranscriptions[0]
             ? previousTranscriptions[0].contentSections.segments
                 .slice(1)
-                .slice(-5)
+                .slice(-10) // TODO: Add segments based on their token count from verbose response
                 .map((segment) => segment.text)
                 .join(' ')
             : undefined
