@@ -35,17 +35,28 @@ interface IOpenAIVerboseTranscription {
 }
 
 export class OpenAIProvider implements IAIProvider {
-  transcribe = async ({ fileByteArray, fileName }: ITranscribeParams): TTranscribeResponse => {
+  transcribe = async ({
+    fileByteArray,
+    fileName,
+    previousContext,
+  }: ITranscribeParams): TTranscribeResponse => {
     const file = await toFile(fileByteArray, fileName)
 
     const openAIClient = new OpenAI()
 
+    const transcriptionProps: Omit<OpenAI.Audio.Transcriptions.TranscriptionCreateParams, 'file'> =
+      {
+        model: 'whisper-1',
+        language: 'pt',
+        response_format: 'verbose_json',
+        timestamp_granularities: ['segment'],
+        prompt: previousContext,
+      }
+    logger.info('Transcription', { transcriptionProps })
+
     const transcription = (await openAIClient.audio.transcriptions.create({
-      model: 'whisper-1',
+      ...transcriptionProps,
       file,
-      language: 'pt',
-      response_format: 'verbose_json',
-      timestamp_granularities: ['segment'],
     })) as IOpenAIVerboseTranscription
 
     logger.info('Transcription', { transcription })

@@ -44,11 +44,27 @@ const getRecordPromises = (event: SQSEvent) => {
             )
           }
 
+          const previousChunkId = (parseInt(chunkId) - 1).toString().padStart(3, '0')
+          const previousTranscriptions = await chunkTranscriptionsRepository.get({
+            userId: 'test-userId',
+            conversationId,
+            id: previousChunkId,
+          })
+
+          const previousContext = previousTranscriptions[0]
+            ? previousTranscriptions[0].contentSections.segments
+                .slice(1)
+                .slice(-5)
+                .map((segment) => segment.text)
+                .join(' ')
+            : undefined
+
           try {
             const AIProvider = AIProviderSwitcher.getProvider(AIProviders.OPEN_AI)
             const contentSections = await AIProvider.transcribe({
               fileByteArray,
               fileName: fileNameWithExtension,
+              previousContext,
             })
             logger.info('Transcribed content sections', { contentSections })
 

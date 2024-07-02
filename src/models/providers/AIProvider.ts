@@ -3,6 +3,7 @@ import { IChunkTranscriptionContent } from '../../models/contracts/ChunkTranscri
 export interface ITranscribeParams {
   fileByteArray: Uint8Array
   fileName: string
+  previousContext?: string
 }
 export type TTranscribeResponse = Promise<IChunkTranscriptionContent>
 
@@ -16,6 +17,6 @@ interface ISummarizeSection {
 export type TSummarizeResponse = Promise<ISummarizeSection[]>
 
 export interface IAIProvider {
-  transcribe({ fileByteArray, fileName }: ITranscribeParams): TTranscribeResponse
+  transcribe({ fileByteArray, fileName, previousContext }: ITranscribeParams): TTranscribeResponse
   summarize({ contentSections }: ISummarizeParams): TSummarizeResponse
 }
