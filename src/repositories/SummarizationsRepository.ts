@@ -36,7 +36,7 @@ export class SummarizationsRepository {
 
   public get({ userId, conversationId }: TPartialPrimaryKeysParams) {
     const { pk, sk } = getPartialPrimaryKeys({ userId, conversationId })
-    return SummarizationDBModel.query('pk').eq(pk).and().where('sk').beginsWith(sk).all().exec()
+    return SummarizationDBModel.query('pk').eq(pk).and().where('sk').beginsWith(sk).exec()
   }
 
   public delete({ userId, id, conversationId }: TPrimaryKeysParams) {

@@ -32,7 +32,11 @@ export class ConversationsRepository {
 
   public get({ userId, id }: TPartialPrimaryKeysParams) {
     const { pk, sk } = getPartialPrimaryKeys({ userId, id })
-    return ConversationDBModel.query('pk').eq(pk).and().where('sk').beginsWith(sk).all().exec()
+    if (sk.length) {
+      return ConversationDBModel.query('pk').eq(pk).and().where('sk').beginsWith(sk).exec()
+    } else {
+      return ConversationDBModel.query('pk').eq(pk).exec()
+    }
   }
 
   public delete({ userId, id }: TPrimaryKeysParams) {

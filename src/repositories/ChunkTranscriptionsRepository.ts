@@ -42,13 +42,7 @@ export class ChunkTranscriptionsRepository {
 
   public get({ userId, conversationId, id }: TPartialPrimaryKeysParams) {
     const { pk, sk } = getPartialPrimaryKeys({ userId, conversationId, id })
-    return ChunkTranscriptionDBModel.query('pk')
-      .eq(pk)
-      .and()
-      .where('sk')
-      .beginsWith(sk)
-      .all()
-      .exec()
+    return ChunkTranscriptionDBModel.query('pk').eq(pk).and().where('sk').beginsWith(sk).exec()
   }
 
   public delete({ userId, conversationId, id }: TPrimaryKeysParams) {
