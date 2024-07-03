@@ -3,20 +3,19 @@ import { IConversation, IConversationKeys } from '../models/contracts/Conversati
 import { ConversationDBModel } from '../models/schemas/Conversation/model'
 
 type TPrimaryKeysParams = Pick<IConversation, 'userId' | 'id'>
-type TPartialPrimaryKeysParams = Pick<IConversation, 'userId' | 'id'> &
-  Partial<Pick<IConversation, 'id'>>
+type TPartialPrimaryKeysParams = Pick<IConversation, 'userId'> & Partial<Pick<IConversation, 'id'>>
 
 const getPrimaryKeys = ({ userId, id }: TPrimaryKeysParams) => {
   return {
-    pk: createDBKey<IConversationKeys>([{ userId }, { conversationId: id }]),
-    sk: createDBKey<IConversationKeys>([{ conversation: undefined }]),
+    pk: createDBKey<IConversationKeys>([{ userId }]),
+    sk: createDBKey<IConversationKeys>([{ conversationId: id }]),
   }
 }
 
 const getPartialPrimaryKeys = ({ userId, id }: TPartialPrimaryKeysParams) => {
   return {
-    pk: createDBKey<IConversationKeys>([{ userId }, { conversationId: id }]),
-    sk: createDBKey<IConversationKeys>([{ conversation: undefined }]),
+    pk: createDBKey<IConversationKeys>([{ userId }]),
+    sk: createDBKey<IConversationKeys>([{ conversationId: id }]),
   }
 }
 

@@ -3,17 +3,13 @@ import { ISummarization, ISummarizationKeys } from '../models/contracts/Summariz
 import { SummarizationDBModel } from '../models/schemas/Summarization/model'
 
 type TPrimaryKeysParams = Pick<ISummarization, 'userId' | 'conversationId' | 'id'>
-type TPartialPrimaryKeysParams = Pick<ISummarization, 'userId'> &
-  Partial<Pick<ISummarization, 'conversationId' | 'id'>>
+type TPartialPrimaryKeysParams = Pick<ISummarization, 'userId' | 'conversationId'> &
+  Partial<Pick<ISummarization, 'id'>>
 
 const getPrimaryKeys = ({ userId, conversationId, id }: TPrimaryKeysParams) => {
   return {
     pk: createDBKey<ISummarizationKeys>([{ userId }]),
-    sk: createDBKey<ISummarizationKeys>([
-      { summarization: undefined },
-      { conversationId },
-      { summarizationId: id },
-    ]),
+    sk: createDBKey<ISummarizationKeys>([{ conversationId }, { summarizationId: id }]),
   }
 }
 
@@ -21,9 +17,8 @@ const getPartialPrimaryKeys = ({ userId, conversationId, id }: TPartialPrimaryKe
   return {
     pk: createDBKey<ISummarizationKeys>([{ userId }]),
     sk: createDBKey<ISummarizationKeys>([
-      { summarization: undefined },
-      ...(conversationId ? [{ conversationId }] : []),
-      ...(conversationId && id ? [{ summarizationId: id }] : []),
+      { conversationId },
+      ...(id ? [{ summarizationId: id }] : []),
     ]),
   }
 }
@@ -39,8 +34,8 @@ export class SummarizationsRepository {
     })
   }
 
-  public get({ userId }: TPartialPrimaryKeysParams) {
-    const { pk, sk } = getPartialPrimaryKeys({ userId })
+  public get({ userId, conversationId }: TPartialPrimaryKeysParams) {
+    const { pk, sk } = getPartialPrimaryKeys({ userId, conversationId })
     return SummarizationDBModel.query('pk').eq(pk).and().where('sk').beginsWith(sk).all().exec()
   }
 

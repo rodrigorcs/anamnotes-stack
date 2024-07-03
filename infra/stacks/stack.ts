@@ -207,6 +207,16 @@ export class AnamnotesStack extends Stack {
             TABLE_NAME: anamnotesTable.tableName,
           },
         },
+        getConversations: {
+          reservedConcurrentExecutions: 1,
+          memoryMB: 128,
+          timeoutSecs: 300,
+          sourceCodePath: '../dist/handlers/get-conversations',
+          environment: {
+            ...sharedLambdaEnvs,
+            TABLE_NAME: anamnotesTable.tableName,
+          },
+        },
       },
     })
 
@@ -240,6 +250,38 @@ export class AnamnotesStack extends Stack {
               handler: conversationLambdas.startConversation,
               apigwMethodOptions: {
                 operationName: 'Start conversation',
+                apiKeyRequired: false,
+              },
+            },
+          ],
+        },
+        {
+          resourcePath: [],
+          lambdaIntegrations: [
+            {
+              method: HttpMethods.GET,
+              handler: conversationLambdas.getConversations,
+              apigwMethodOptions: {
+                operationName: 'Get conversations',
+                apiKeyRequired: false,
+              },
+            },
+          ],
+        },
+      ],
+    })
+
+    new NestedApiResources(this, {
+      baseResource: conversationResource,
+      routes: [
+        {
+          resourcePath: [],
+          lambdaIntegrations: [
+            {
+              method: HttpMethods.GET,
+              handler: conversationLambdas.getConversations,
+              apigwMethodOptions: {
+                operationName: 'Get conversation by ID',
                 apiKeyRequired: false,
               },
             },
@@ -289,6 +331,7 @@ export class AnamnotesStack extends Stack {
     anamnotesTable.grantReadWriteData(aiLambdas.transcribe.lambdaFn)
     anamnotesTable.grantReadWriteData(aiLambdas.summarize.lambdaFn)
     anamnotesTable.grantReadWriteData(conversationLambdas.startConversation.lambdaFn)
+    anamnotesTable.grantReadData(conversationLambdas.getConversations.lambdaFn)
 
     webSocketAPI.grantManageConnections(aiLambdas.summarize.lambdaFn)
 
