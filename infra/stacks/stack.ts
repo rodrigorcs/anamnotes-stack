@@ -116,7 +116,7 @@ export class AnamnotesStack extends Stack {
 
     // API GATEWAY - WEBSOCKET API
 
-    const { webSocketAPI } = new APIGatewayWebSocket(this, {
+    const { webSocketAPI, httpsURL: webSocketURL } = new APIGatewayWebSocket(this, {
       handlers: {
         connect: websocketLambdas.connect.lambdaFn,
         disconnect: websocketLambdas.disconnect.lambdaFn,
@@ -187,7 +187,7 @@ export class AnamnotesStack extends Stack {
             ...sharedLambdaEnvs,
             TABLE_NAME: anamnotesTable.tableName,
             OPENAI_API_KEY: openaiApiKey,
-            WEBSOCKET_ENDPOINT: `${webSocketAPI.apiEndpoint}/prod`,
+            WEBSOCKET_ENDPOINT: webSocketURL,
           },
         },
       },

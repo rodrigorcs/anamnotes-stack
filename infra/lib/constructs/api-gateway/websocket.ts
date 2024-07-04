@@ -27,6 +27,7 @@ interface IAPIGatewayWebSocketProps {
 
 export class APIGatewayWebSocket {
   public readonly webSocketAPI: apigw.WebSocketApi
+  public readonly httpsURL: string
 
   constructor(scope: Construct, props: IAPIGatewayWebSocketProps) {
     const apiName = `${config.projectName}${props.name ? `-${props.name}-` : '-'}websocket-api`
@@ -56,6 +57,8 @@ export class APIGatewayWebSocket {
       stageName,
       autoDeploy: true,
     })
+
+    this.httpsURL = stage.url.replace('wss', 'https')
 
     if (props.gatewayDomain) {
       const certificateARN = Arn.format({
