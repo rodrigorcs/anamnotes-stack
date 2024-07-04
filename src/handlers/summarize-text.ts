@@ -16,8 +16,9 @@ import dayjs from 'dayjs'
 
 export const handler: DynamoDBStreamHandler = async (event) => {
   try {
-    const websocketURL = `https://q5nwr2lnm7.execute-api.us-east-1.amazonaws.com/prod`
-    const client = new ApiGatewayManagementApiClient({ endpoint: websocketURL })
+    const { WEBSOCKET_ENDPOINT } = process.env as Record<string, string>
+
+    const client = new ApiGatewayManagementApiClient({ endpoint: WEBSOCKET_ENDPOINT })
     const chunkTranscriptionsRepository = new ChunkTranscriptionsRepository()
     const summarizationsRepository = new SummarizationsRepository()
     const wsConnectionsRepository = new WebSocketConnectionsRepository()

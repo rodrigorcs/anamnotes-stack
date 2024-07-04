@@ -85,7 +85,7 @@ export class AnamnotesStack extends Stack {
       STAGE: config.stage,
     }
 
-    // LAMBDAS
+    // API GATEWAY - WEBSOCKET API - LAMBDAS
 
     const { functionMap: websocketLambdas } = new GroupedLambdaFunctions(this, {
       type: ELambdaGroupTypes.WEBSOCKET,
@@ -113,6 +113,23 @@ export class AnamnotesStack extends Stack {
         },
       },
     })
+
+    // API GATEWAY - WEBSOCKET API
+
+    const { webSocketAPI } = new APIGatewayWebSocket(this, {
+      handlers: {
+        connect: websocketLambdas.connect.lambdaFn,
+        disconnect: websocketLambdas.disconnect.lambdaFn,
+      },
+      gatewayDomain: {
+        domainName: config.aws.route53.domainName,
+        subdomainName: 'ws',
+        hostedZoneId: config.aws.route53.hostedZoneId,
+        certificateId: config.aws.acm.certificateId,
+      },
+    })
+
+    // LAMBDAS
 
     const { functionMap: aiLambdas } = new GroupedLambdaFunctions(this, {
       type: ELambdaGroupTypes.AI,
@@ -170,6 +187,7 @@ export class AnamnotesStack extends Stack {
             ...sharedLambdaEnvs,
             TABLE_NAME: anamnotesTable.tableName,
             OPENAI_API_KEY: openaiApiKey,
+            WEBSOCKET_ENDPOINT: webSocketAPI.apiEndpoint,
           },
         },
       },
@@ -317,21 +335,6 @@ export class AnamnotesStack extends Stack {
           ],
         },
       ],
-    })
-
-    // API GATEWAY - WEBSOCKET API
-
-    const { webSocketAPI } = new APIGatewayWebSocket(this, {
-      handlers: {
-        connect: websocketLambdas.connect.lambdaFn,
-        disconnect: websocketLambdas.disconnect.lambdaFn,
-      },
-      gatewayDomain: {
-        domainName: config.aws.route53.domainName,
-        subdomainName: 'ws',
-        hostedZoneId: config.aws.route53.hostedZoneId,
-        certificateId: config.aws.acm.certificateId,
-      },
     })
 
     // PERMISSIONS
