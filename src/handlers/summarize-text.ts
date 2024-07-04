@@ -13,6 +13,10 @@ import { AIProviderSwitcher, AIProviders } from '../switchers/AISwitcher'
 import { SummarizationsRepository } from '../repositories/SummarizationsRepository'
 import { v4 as uuid } from 'uuid'
 import dayjs from 'dayjs'
+import {
+  EWebsocketMessageTypes,
+  TSummarizationWebsocketMessage,
+} from '../models/events/WebsocketMessage'
 
 export const handler: DynamoDBStreamHandler = async (event) => {
   try {
@@ -37,50 +41,73 @@ export const handler: DynamoDBStreamHandler = async (event) => {
 
       const { userId, conversationId } = chunkTranscriptionEntity
 
-      const chunkTranscriptions = await chunkTranscriptionsRepository.get({
-        conversationId,
-        userId,
-      })
-
-      logger.info('chunkTranscriptions', { chunkTranscriptions })
-
-      const contentSections = chunkTranscriptions.map(
-        (chunkTranscription) => chunkTranscription.contentSections,
-      )
-
-      const summarizedSections = await AIProvider.summarize({
-        contentSections,
-      })
-
-      logger.info('Summarized content', { summarizedSections })
-
       const connections = await wsConnectionsRepository.get({
         userId,
         conversationId,
       })
       const connectionId = connections[0].id
 
-      const requestParams = {
-        ConnectionId: connectionId,
-        Data: JSON.stringify(summarizedSections),
-      }
-
-      logger.info('connectionId', { connections, connectionId })
-
-      const postToConnectionCommand = new PostToConnectionCommand(requestParams)
-      await client.send(postToConnectionCommand)
-      logger.info(`Sent response to WS connection ${connectionId}`, { summarizedSections })
-
-      const createdSummarizationItem = await summarizationsRepository.create({
-        id: uuid(),
+      const chunkTranscriptions = await chunkTranscriptionsRepository.get({
         conversationId,
         userId,
-        content: summarizedSections,
-        createdAt: dayjs(),
       })
-      logger.info('Created summarization item', { createdSummarizationItem })
+      logger.info('chunkTranscriptions', { chunkTranscriptions })
 
-      const deleteConnectionCommand = new DeleteConnectionCommand(requestParams)
+      const contentSections = chunkTranscriptions.map(
+        (chunkTranscription) => chunkTranscription.contentSections,
+      )
+
+      try {
+        const summarizedSections = await AIProvider.summarize({
+          contentSections,
+        })
+        logger.info('Summarized content', { summarizedSections })
+
+        const message: TSummarizationWebsocketMessage = {
+          success: true,
+          type: EWebsocketMessageTypes.SUMMARIZATION,
+          data: {
+            conversationId,
+            content: summarizedSections,
+          },
+        }
+
+        const postToConnectionCommand = new PostToConnectionCommand({
+          ConnectionId: connectionId,
+          Data: JSON.stringify(message),
+        })
+        await client.send(postToConnectionCommand)
+        logger.info(`Sent message to WS connection ${connectionId}`, { message })
+
+        const createdSummarizationItem = await summarizationsRepository.create({
+          id: uuid(),
+          conversationId,
+          userId,
+          content: summarizedSections,
+          createdAt: dayjs(),
+        })
+        logger.info('Created summarization item', { createdSummarizationItem })
+      } catch (error) {
+        const message: TSummarizationWebsocketMessage = {
+          success: false,
+          type: EWebsocketMessageTypes.SUMMARIZATION,
+          error: {
+            message:
+              error instanceof Error ? error.message : typeof error === 'string' ? error : null,
+          },
+        }
+
+        const postToConnectionCommand = new PostToConnectionCommand({
+          ConnectionId: connectionId,
+          Data: JSON.stringify(message),
+        })
+        await client.send(postToConnectionCommand)
+        logger.info(`Sent message to WS connection ${connectionId}`, { message })
+      }
+
+      const deleteConnectionCommand = new DeleteConnectionCommand({
+        ConnectionId: connectionId,
+      })
       await client.send(deleteConnectionCommand)
       logger.info(`Deleted WS connection ${connectionId}`)
     }
