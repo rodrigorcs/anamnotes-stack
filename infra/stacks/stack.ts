@@ -187,7 +187,7 @@ export class AnamnotesStack extends Stack {
             ...sharedLambdaEnvs,
             TABLE_NAME: anamnotesTable.tableName,
             OPENAI_API_KEY: openaiApiKey,
-            WEBSOCKET_ENDPOINT: webSocketAPI.apiEndpoint,
+            WEBSOCKET_ENDPOINT: `${webSocketAPI.apiEndpoint}/prod`,
           },
         },
       },
