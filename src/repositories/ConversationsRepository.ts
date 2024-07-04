@@ -1,4 +1,3 @@
-import { logger } from '../common/powertools/logger'
 import { createDBKey } from '../lib/helpers/dynamodb'
 import { IConversation, IConversationKeys } from '../models/contracts/Conversation'
 import { ConversationDBModel } from '../models/schemas/Conversation/model'
@@ -33,7 +32,6 @@ export class ConversationsRepository {
 
   public get({ userId, id }: TPartialPrimaryKeysParams) {
     const { pk, sk } = getPartialPrimaryKeys({ userId, id })
-    logger.info('Primary keys', { pk, sk })
     if (sk.length) {
       return ConversationDBModel.query('pk').eq(pk).and().where('sk').beginsWith(sk).exec()
     } else {
