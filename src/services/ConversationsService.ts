@@ -5,6 +5,7 @@ import { IConversation, IConversationWithSummarizations } from '../models/contra
 import { TConversationSchema } from '../models/schemas/Conversation/schema'
 import { ConversationsRepository } from '../repositories/ConversationsRepository'
 import { TSummarizationSchema } from '../models/schemas/Summarization/schema'
+import { logger } from '../common/powertools/logger'
 
 export class ConversationsService {
   private repository: ConversationsRepository
@@ -17,9 +18,12 @@ export class ConversationsService {
   public convertEntitiesToConversationContract(
     allEntities: (TConversationSchema | TSummarizationSchema)[],
   ): IConversationWithSummarizations {
+    logger.info('allEntities', { allEntities })
+
     const summarizationEntities = allEntities.filter((entity) =>
       entity.sk.includes('summarization'),
     ) as TSummarizationSchema[]
+    logger.info('summarizationEntities', { summarizationEntities })
 
     const summarizationContracts = summarizationEntities.map((summarizationEntity) => ({
       id: summarizationEntity.id,
@@ -27,10 +31,12 @@ export class ConversationsService {
       createdAt: dayjs(summarizationEntity.createdAt),
       updatedAt: dayjs(summarizationEntity.updatedAt),
     }))
+    logger.info('summarizationContracts', { summarizationContracts })
 
     const conversationEntity = allEntities.find(
       (entity) => !entity.sk.includes('summarization'),
     ) as TConversationSchema
+    logger.info('conversationEntity', { conversationEntity })
 
     return {
       id: conversationEntity.id,
