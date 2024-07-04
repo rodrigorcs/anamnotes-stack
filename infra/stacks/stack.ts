@@ -217,6 +217,16 @@ export class AnamnotesStack extends Stack {
             TABLE_NAME: anamnotesTable.tableName,
           },
         },
+        getConversation: {
+          reservedConcurrentExecutions: 1,
+          memoryMB: 128,
+          timeoutSecs: 300,
+          sourceCodePath: '../dist/handlers/get-conversation',
+          environment: {
+            ...sharedLambdaEnvs,
+            TABLE_NAME: anamnotesTable.tableName,
+          },
+        },
       },
     })
 
@@ -279,7 +289,7 @@ export class AnamnotesStack extends Stack {
           lambdaIntegrations: [
             {
               method: HttpMethods.GET,
-              handler: conversationLambdas.getConversations,
+              handler: conversationLambdas.getConversation,
               apigwMethodOptions: {
                 operationName: 'Get conversation by ID',
                 apiKeyRequired: false,
@@ -332,6 +342,7 @@ export class AnamnotesStack extends Stack {
     anamnotesTable.grantReadWriteData(aiLambdas.summarize.lambdaFn)
     anamnotesTable.grantReadWriteData(conversationLambdas.startConversation.lambdaFn)
     anamnotesTable.grantReadData(conversationLambdas.getConversations.lambdaFn)
+    anamnotesTable.grantReadData(conversationLambdas.getConversation.lambdaFn)
 
     webSocketAPI.grantManageConnections(aiLambdas.summarize.lambdaFn)
 
