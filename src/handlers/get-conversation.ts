@@ -11,12 +11,12 @@ export const handler: APIGatewayProxyHandler = middyWrapper<APIGatewayProxyEvent
 
     const userId = 'test-userId'
     const conversationsService = new ConversationsService()
-    const conversationItems = await conversationsService.getOne({
+    const conversationItem = await conversationsService.getOne({
       userId,
       id: conversationId,
     })
 
-    return successResponse({ conversations: conversationItems })
+    return successResponse({ conversation: conversationItem })
   } catch (error: unknown) {
     logger.error(JSON.stringify(error))
     return errorResponse(400, error as Error)

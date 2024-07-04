@@ -1,6 +1,7 @@
 import {
   ApiGatewayManagementApiClient,
   PostToConnectionCommand,
+  DeleteConnectionCommand,
 } from '@aws-sdk/client-apigatewaymanagementapi'
 import { WebSocketConnectionsRepository } from '../repositories/WebSocketConnectionsRepository'
 import { logger } from '../common/powertools/logger'
@@ -65,8 +66,9 @@ export const handler: DynamoDBStreamHandler = async (event) => {
 
       logger.info('connectionId', { connections, connectionId })
 
-      const command = new PostToConnectionCommand(requestParams)
-      await client.send(command)
+      const postToConnectionCommand = new PostToConnectionCommand(requestParams)
+      await client.send(postToConnectionCommand)
+      logger.info(`Sent response to WS connection ${connectionId}`, { summarizedSections })
 
       const createdSummarizationItem = await summarizationsRepository.create({
         id: uuid(),
@@ -75,8 +77,11 @@ export const handler: DynamoDBStreamHandler = async (event) => {
         content: summarizedSections,
         createdAt: dayjs(),
       })
-
       logger.info('Created summarization item', { createdSummarizationItem })
+
+      const deleteConnectionCommand = new DeleteConnectionCommand(requestParams)
+      await client.send(deleteConnectionCommand)
+      logger.info(`Deleted WS connection ${connectionId}`)
     }
   } catch (error) {
     logger.error('Error in handler', { error })
