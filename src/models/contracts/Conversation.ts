@@ -1,9 +1,15 @@
 import { Dayjs } from 'dayjs'
 import { ISummarization } from './Summarization'
 
+interface IClient {
+  id: string
+  name: string
+}
+
 export interface IConversation {
   id: string
   userId: string
+  client: IClient
   createdAt: Dayjs
   updatedAt?: Dayjs
 }

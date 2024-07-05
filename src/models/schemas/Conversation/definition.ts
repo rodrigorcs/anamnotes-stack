@@ -18,6 +18,20 @@ export const conversationSchemaDefinition: TSchemaDefinition<IConversationEntity
     type: String,
     required: true,
   },
+  client: {
+    type: Object,
+    required: true,
+    schema: {
+      id: {
+        type: String,
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+    },
+  },
   createdAt: {
     type: String,
     required: true,
