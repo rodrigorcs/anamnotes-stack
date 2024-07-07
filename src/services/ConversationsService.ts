@@ -31,6 +31,7 @@ export class ConversationsService {
     return {
       id: conversationEntity.id,
       userId: conversationEntity.userId,
+      client: conversationEntity.client,
       summarizations: summarizationContracts,
       createdAt: dayjs(conversationEntity.createdAt),
       updatedAt: dayjs(conversationEntity.updatedAt),
@@ -81,7 +82,7 @@ export class ConversationsService {
 
     const summarizationEntities = entities.filter((entity) =>
       entity.sk.includes('summarization'),
-    ) as TSummarizationSchema[]
+    ) as unknown as TSummarizationSchema[]
 
     const contract = this.convertEntitiesToConversationContract({
       conversationEntity,
