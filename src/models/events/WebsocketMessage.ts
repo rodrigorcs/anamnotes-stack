@@ -1,4 +1,4 @@
-import { ISummarization } from '../contracts/Summarization'
+import { IConversationWithSummarizations } from '../contracts/Conversation'
 
 export enum EWebsocketMessageTypes {
   SUMMARIZATION = 'summarization',
@@ -15,6 +15,4 @@ export interface IWebsocketMessage<DataType> {
   error?: IWebsocketMessageError
 }
 
-export type TSummarizationWebsocketMessage = IWebsocketMessage<
-  Pick<ISummarization, 'conversationId' | 'content'>
->
+export type TSummarizationWebsocketMessage = IWebsocketMessage<IConversationWithSummarizations>

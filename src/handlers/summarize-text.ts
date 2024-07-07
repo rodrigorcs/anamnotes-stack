@@ -17,6 +17,7 @@ import {
   EWebsocketMessageTypes,
   TSummarizationWebsocketMessage,
 } from '../models/events/WebsocketMessage'
+import { ConversationsService } from '../services/ConversationsService'
 
 export const handler: DynamoDBStreamHandler = async (event) => {
   try {
@@ -26,6 +27,7 @@ export const handler: DynamoDBStreamHandler = async (event) => {
     const chunkTranscriptionsRepository = new ChunkTranscriptionsRepository()
     const summarizationsRepository = new SummarizationsRepository()
     const wsConnectionsRepository = new WebSocketConnectionsRepository()
+    const conversationsService = new ConversationsService()
     const AIProvider = AIProviderSwitcher.getProvider(AIProviders.DUMMY)
 
     // TODO: Add try/catch
@@ -63,13 +65,23 @@ export const handler: DynamoDBStreamHandler = async (event) => {
         })
         logger.info('Summarized content', { summarizedSections })
 
+        const createdSummarizationItem = await summarizationsRepository.create({
+          id: uuid(),
+          conversationId,
+          userId,
+          content: summarizedSections,
+          createdAt: dayjs(),
+        })
+
+        const updatedConversationItem = await conversationsService.getOne({
+          id: conversationId,
+          userId,
+        })
+
         const message: TSummarizationWebsocketMessage = {
           success: true,
           type: EWebsocketMessageTypes.SUMMARIZATION,
-          data: {
-            conversationId,
-            content: summarizedSections,
-          },
+          data: updatedConversationItem,
         }
 
         const postToConnectionCommand = new PostToConnectionCommand({
@@ -79,13 +91,6 @@ export const handler: DynamoDBStreamHandler = async (event) => {
         await client.send(postToConnectionCommand)
         logger.info(`Sent message to WS connection ${connectionId}`, { message })
 
-        const createdSummarizationItem = await summarizationsRepository.create({
-          id: uuid(),
-          conversationId,
-          userId,
-          content: summarizedSections,
-          createdAt: dayjs(),
-        })
         logger.info('Created summarization item', { createdSummarizationItem })
       } catch (error) {
         const message: TSummarizationWebsocketMessage = {
