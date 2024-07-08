@@ -8,6 +8,7 @@ export const handler: APIGatewayProxyHandler = middyWrapper<APIGatewayProxyEvent
   try {
     const userId = 'test-userId'
     const conversationsService = new ConversationsService()
+    logger.info('Getting conversations')
     const conversationItems = await conversationsService.get({
       userId,
     })

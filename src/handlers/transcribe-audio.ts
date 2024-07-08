@@ -19,7 +19,7 @@ const getRecordPromises = (event: SQSEvent) => {
         const s3Event = JSON.parse(record.body) as S3Event
 
         for (const s3Record of s3Event.Records) {
-          logger.debug('Ingested S3 record', { s3Record })
+          logger.info('Ingested S3 record', { s3Record })
           const bucketName = s3Record.s3.bucket.name
           const objectKey = decodeURIComponent(s3Record.s3.object.key)
 

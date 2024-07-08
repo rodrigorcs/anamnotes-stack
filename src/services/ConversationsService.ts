@@ -5,6 +5,7 @@ import { IConversation, IConversationWithSummarizations } from '../models/contra
 import { TConversationSchema } from '../models/schemas/Conversation/schema'
 import { ConversationsRepository } from '../repositories/ConversationsRepository'
 import { TSummarizationSchema } from '../models/schemas/Summarization/schema'
+import { logger } from '../common/powertools/logger'
 
 export class ConversationsService {
   private repository: ConversationsRepository
@@ -69,7 +70,9 @@ export class ConversationsService {
     id,
   }: Pick<IConversation, 'userId'> & Partial<Pick<IConversation, 'id'>>) {
     const entities = await this.repository.get({ userId, id })
+    logger.info('Got entities')
     const contracts = this.convertEntitiesToConversationContracts(entities)
+    logger.info('Converted to contracts')
 
     return contracts
   }
