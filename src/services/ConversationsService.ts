@@ -1,11 +1,9 @@
 import { QueryResponse } from 'dynamoose/dist/ItemRetriever'
 import { v4 as uuid } from 'uuid'
 import dayjs from 'dayjs'
-import { IConversation, IConversationWithSummarizations } from '../models/contracts/Conversation'
+import { IConversation } from '../models/contracts/Conversation'
 import { TConversationSchema } from '../models/schemas/Conversation/schema'
 import { ConversationsRepository } from '../repositories/ConversationsRepository'
-import { TSummarizationSchema } from '../models/schemas/Summarization/schema'
-import { logger } from '../common/powertools/logger'
 
 export class ConversationsService {
   private repository: ConversationsRepository
@@ -15,49 +13,21 @@ export class ConversationsService {
     this.repository = new ConversationsRepository()
   }
 
-  private convertEntitiesToConversationContract({
-    conversationEntity,
-    summarizationEntities,
-  }: {
-    conversationEntity: TConversationSchema
-    summarizationEntities: TSummarizationSchema[]
-  }): IConversationWithSummarizations {
-    const summarizationContracts = summarizationEntities.map((summarizationEntity) => ({
-      id: summarizationEntity.id,
-      content: summarizationEntity.content,
-      createdAt: dayjs(summarizationEntity.createdAt),
-      updatedAt: dayjs(summarizationEntity.updatedAt),
-    }))
-
+  private convertEntityToContract(entity: TConversationSchema): IConversation {
     return {
-      id: conversationEntity.id,
-      userId: conversationEntity.userId,
-      client: conversationEntity.client,
-      summarizations: summarizationContracts,
-      createdAt: dayjs(conversationEntity.createdAt),
-      updatedAt: dayjs(conversationEntity.updatedAt),
+      id: entity.id,
+      userId: entity.userId,
+      client: entity.client,
+      createdAt: dayjs(entity.createdAt),
+      updatedAt: dayjs(entity.updatedAt),
     }
   }
 
-  private convertEntitiesToConversationContracts(
-    entities: QueryResponse<TConversationSchema | TSummarizationSchema>,
-  ): IConversationWithSummarizations[] {
-    const conversationEntities = entities.filter(
-      (entity) => !entity.sk.includes('summarization'),
-    ) as TConversationSchema[]
-
-    return conversationEntities.map((conversationEntity) => {
-      const summarizationEntities = entities.filter((entity) => {
-        return (
-          entity.sk.includes('summarization') &&
-          (entity as TSummarizationSchema).conversationId === conversationEntity.id
-        )
-      }) as TSummarizationSchema[]
-
-      return this.convertEntitiesToConversationContract({
-        conversationEntity,
-        summarizationEntities,
-      })
+  private convertEntitiesToContracts(
+    entities: QueryResponse<TConversationSchema>,
+  ): IConversation[] {
+    return entities.map((entity) => {
+      return this.convertEntityToContract(entity)
     })
   }
 
@@ -70,27 +40,14 @@ export class ConversationsService {
     id,
   }: Pick<IConversation, 'userId'> & Partial<Pick<IConversation, 'id'>>) {
     const entities = await this.repository.get({ userId, id })
-    logger.info('Got entities')
-    const contracts = this.convertEntitiesToConversationContracts(entities)
-    logger.info('Converted to contracts')
+    const contracts = this.convertEntitiesToContracts(entities)
 
     return contracts
   }
 
   public async getOne({ userId, id }: Pick<IConversation, 'userId' | 'id'>) {
     const entities = await this.repository.get({ userId, id })
-
-    const conversationEntity = entities.find((entity) => !entity.sk.includes('summarization'))
-    if (!conversationEntity) throw new Error('Conversation not found')
-
-    const summarizationEntities = entities.filter((entity) =>
-      entity.sk.includes('summarization'),
-    ) as unknown as TSummarizationSchema[]
-
-    const contract = this.convertEntitiesToConversationContract({
-      conversationEntity,
-      summarizationEntities,
-    })
+    const contract = this.convertEntityToContract(entities[0])
 
     return contract
   }

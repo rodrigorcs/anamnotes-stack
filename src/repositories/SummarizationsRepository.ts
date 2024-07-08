@@ -8,18 +8,15 @@ type TPartialPrimaryKeysParams = Pick<ISummarization, 'userId' | 'conversationId
 
 const getPrimaryKeys = ({ userId, conversationId, id }: TPrimaryKeysParams) => {
   return {
-    pk: createDBKey<ISummarizationKeys>([{ userId }]),
-    sk: createDBKey<ISummarizationKeys>([{ conversationId }, { summarizationId: id }]),
+    pk: createDBKey<ISummarizationKeys>([{ userId }, { conversationId }]),
+    sk: createDBKey<ISummarizationKeys>([{ summarizationId: id }]),
   }
 }
 
 const getPartialPrimaryKeys = ({ userId, conversationId, id }: TPartialPrimaryKeysParams) => {
   return {
-    pk: createDBKey<ISummarizationKeys>([{ userId }]),
-    sk: createDBKey<ISummarizationKeys>([
-      { conversationId },
-      ...(id ? [{ summarizationId: id }] : []),
-    ]),
+    pk: createDBKey<ISummarizationKeys>([{ userId }, { conversationId }]),
+    sk: createDBKey<ISummarizationKeys>([...(id ? [{ summarizationId: id }] : [])]),
   }
 }
 
@@ -34,8 +31,8 @@ export class SummarizationsRepository {
     })
   }
 
-  public get({ userId, conversationId }: TPartialPrimaryKeysParams) {
-    const { pk, sk } = getPartialPrimaryKeys({ userId, conversationId })
+  public get({ userId, conversationId, id }: TPartialPrimaryKeysParams) {
+    const { pk, sk } = getPartialPrimaryKeys({ userId, conversationId, id })
     return SummarizationDBModel.query('pk').eq(pk).and().where('sk').beginsWith(sk).exec()
   }
 
