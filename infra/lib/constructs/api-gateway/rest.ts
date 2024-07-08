@@ -317,7 +317,7 @@ export class ExistingAPIGatewayRestApiResource {
       namespace: 'AWS/ApiGateway',
       metricName,
       dimensionsMap: {
-        ApiName: 'BLAZE API',
+        ApiName: 'Anamnotes REST API',
       },
     })
 
