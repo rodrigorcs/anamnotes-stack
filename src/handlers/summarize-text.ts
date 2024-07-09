@@ -30,7 +30,7 @@ export const handler: DynamoDBStreamHandler = async (event) => {
     const wsConnectionsRepository = new WebSocketConnectionsRepository()
     const conversationsService = new ConversationsService()
     const summarizationsService = new SummarizationsService()
-    const AIProvider = AIProviderSwitcher.getProvider(AIProviders.DUMMY)
+    const AIProvider = AIProviderSwitcher.getProvider(AIProviders.OPEN_AI)
 
     // TODO: Add try/catch
     logger.info('Ingested event', { event })
