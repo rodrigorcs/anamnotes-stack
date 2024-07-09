@@ -16,7 +16,7 @@ const getPrimaryKeys = ({ userId, conversationId, id }: TPrimaryKeysParams) => {
 const getPartialPrimaryKeys = ({ userId, conversationId, id }: TPartialPrimaryKeysParams) => {
   return {
     pk: createDBKey<ISummarizationKeys>([{ userId }, { conversationId }]),
-    sk: createDBKey<ISummarizationKeys>([...(id ? [{ summarizationId: id }] : [])]),
+    sk: createDBKey<ISummarizationKeys>([{ summarizationId: id }]),
   }
 }
 
