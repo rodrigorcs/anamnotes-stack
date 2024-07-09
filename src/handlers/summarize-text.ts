@@ -18,6 +18,7 @@ import {
   TSummarizationWebsocketMessage,
 } from '../models/events/WebsocketMessage'
 import { ConversationsService } from '../services/ConversationsService'
+import { SummarizationsService } from '../services/SummarizationsService'
 
 export const handler: DynamoDBStreamHandler = async (event) => {
   try {
@@ -28,6 +29,7 @@ export const handler: DynamoDBStreamHandler = async (event) => {
     const summarizationsRepository = new SummarizationsRepository()
     const wsConnectionsRepository = new WebSocketConnectionsRepository()
     const conversationsService = new ConversationsService()
+    const summarizationsService = new SummarizationsService()
     const AIProvider = AIProviderSwitcher.getProvider(AIProviders.DUMMY)
 
     // TODO: Add try/catch
@@ -78,10 +80,15 @@ export const handler: DynamoDBStreamHandler = async (event) => {
           userId,
         })
 
+        const summarizationItems = await summarizationsService.get({
+          conversationId,
+          userId,
+        })
+
         const message: TSummarizationWebsocketMessage = {
           success: true,
           type: EWebsocketMessageTypes.SUMMARIZATION,
-          data: updatedConversationItem,
+          data: { ...updatedConversationItem, summarizations: summarizationItems },
         }
 
         const postToConnectionCommand = new PostToConnectionCommand({
