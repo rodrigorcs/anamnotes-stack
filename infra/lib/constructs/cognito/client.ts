@@ -1,5 +1,6 @@
 import { aws_cognito as cognito, Duration } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
+import { config } from '../../../config'
 
 interface IUserPoolClientProps extends cognito.UserPoolClientProps {}
 
@@ -7,7 +8,7 @@ export class UserPoolClient {
   public readonly userPoolClient: cognito.UserPoolClient
 
   constructor(scope: Construct, props: IUserPoolClientProps) {
-    const userPoolClientName = `${props.userPool.userPoolId}-client`
+    const userPoolClientName = `${config.projectName}-user-pool-client`
     const standardCognitoAttributes: cognito.StandardAttributesMask = {
       fullname: true,
       email: true,
