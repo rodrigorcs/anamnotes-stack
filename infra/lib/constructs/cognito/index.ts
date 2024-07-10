@@ -28,6 +28,10 @@ export class UserPool {
           required: true,
           mutable: true,
         },
+        email: {
+          required: true,
+          mutable: true,
+        },
       },
       customAttributes: {
         isAdmin: new cognito.StringAttribute({ mutable: true }),
