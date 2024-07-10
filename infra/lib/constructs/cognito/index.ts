@@ -44,7 +44,8 @@ export class UserPool {
       lambdaTriggers: {},
       userInvitation: {
         emailSubject: 'Anamnotes - Código de verificação',
-        emailBody: 'Bem vindo ao Anamnotes! O seu código de verificação é "{####}".',
+        emailBody:
+          'Bem vindo ao Anamnotes! O seu usuário é "{username}" e o código de verificação é "{####}".',
       },
       userVerification: {
         emailStyle: cognito.VerificationEmailStyle.CODE,
