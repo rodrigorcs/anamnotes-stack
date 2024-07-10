@@ -33,6 +33,7 @@ export class UserPool {
           mutable: true,
         },
       },
+      signInCaseSensitive: false,
       customAttributes: {
         isAdmin: new cognito.StringAttribute({ mutable: true }),
       },
@@ -44,7 +45,7 @@ export class UserPool {
         requireSymbols: true,
       },
       accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
-      removalPolicy: RemovalPolicy.RETAIN,
+      removalPolicy: RemovalPolicy.DESTROY,
       lambdaTriggers: {},
       userInvitation: {
         emailSubject: 'Anamnotes - Código de verificação',
