@@ -32,9 +32,9 @@ export class UserPoolClient {
       },
       supportedIdentityProviders: [
         cognito.UserPoolClientIdentityProvider.COGNITO,
-        cognito.UserPoolClientIdentityProvider.GOOGLE,
-        cognito.UserPoolClientIdentityProvider.FACEBOOK,
-        cognito.UserPoolClientIdentityProvider.APPLE,
+        // cognito.UserPoolClientIdentityProvider.GOOGLE,
+        // cognito.UserPoolClientIdentityProvider.FACEBOOK,
+        // cognito.UserPoolClientIdentityProvider.APPLE,
       ],
       readAttributes: clientReadAttributes,
       writeAttributes: clientWriteAttributes,
