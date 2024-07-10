@@ -20,8 +20,8 @@ import { APIGatewayWebSocket } from '../lib/constructs/api-gateway/websocket'
 import { DynamoDBAttributeType, DynamoDBTable, StreamViewType } from '../lib/constructs/dynamodb'
 import { S3Bucket, S3EventType, S3HTTPMethods } from '../lib/constructs/s3'
 import { GroupedSQS } from '../lib/constructs/sqs'
-// import { UserPool } from '../lib/constructs/cognito'
-// import { UserPoolClient } from '../lib/constructs/cognito/client'
+import { UserPool } from '../lib/constructs/cognito'
+import { UserPoolClient } from '../lib/constructs/cognito/client'
 
 export class AnamnotesStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -341,10 +341,10 @@ export class AnamnotesStack extends Stack {
 
     // COGNITO
 
-    // const userPool = new UserPool(this, { domainPrefix: 'anamnotes' })
-    // new UserPoolClient(this, {
-    //   userPool: userPool.userPool,
-    // })
+    const userPool = new UserPool(this, { domainPrefix: 'anamnotes' })
+    new UserPoolClient(this, {
+      userPool: userPool.userPool,
+    })
 
     // PERMISSIONS
 
