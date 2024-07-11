@@ -117,6 +117,13 @@ export class AnamnotesStack extends Stack {
       },
     })
 
+    // COGNITO
+
+    const userPool = new UserPool(this, { domainPrefix: config.aws.cognito.domainPrefix })
+    new UserPoolClient(this, {
+      userPool: userPool.userPool,
+    })
+
     // API GATEWAY - WEBSOCKET API
 
     const { webSocketAPI, httpsURL: webSocketURL } = new APIGatewayWebSocket(this, {
@@ -253,7 +260,7 @@ export class AnamnotesStack extends Stack {
 
     // API GATEWAY - REST API
 
-    const { restApi } = new APIGatewayRestApi(this, {
+    const { restApi, cognitoAuthorizer } = new APIGatewayRestApi(this, {
       identitySources: [IdentitySource.header('Authorization')],
       gatewayDomain: {
         domainName: config.aws.route53.domainName,
@@ -262,6 +269,7 @@ export class AnamnotesStack extends Stack {
         certificateId: config.aws.acm.certificateId,
         endpointType: EndpointType.EDGE,
       },
+      cognitoUserPools: [userPool.userPool],
     })
 
     const baseResourceV1 = restApi.root.addResource('v1')
@@ -272,6 +280,7 @@ export class AnamnotesStack extends Stack {
 
     new NestedApiResources(this, {
       baseResource: conversationsResource,
+      cognitoAuthorizer,
       routes: [
         {
           resourcePath: [],
@@ -304,6 +313,7 @@ export class AnamnotesStack extends Stack {
 
     new NestedApiResources(this, {
       baseResource: conversationResource,
+      cognitoAuthorizer,
       routes: [
         {
           resourcePath: [],
@@ -323,6 +333,7 @@ export class AnamnotesStack extends Stack {
 
     new NestedApiResources(this, {
       baseResource: audioChunkResource,
+      cognitoAuthorizer,
       routes: [
         {
           resourcePath: ['uploadUrl'],
@@ -338,13 +349,6 @@ export class AnamnotesStack extends Stack {
           ],
         },
       ],
-    })
-
-    // COGNITO
-
-    const userPool = new UserPool(this, { domainPrefix: config.aws.cognito.domainPrefix })
-    new UserPoolClient(this, {
-      userPool: userPool.userPool,
     })
 
     // PERMISSIONS
