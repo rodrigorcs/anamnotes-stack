@@ -12,7 +12,7 @@
     "clean-cdk": "rm -rf cdk.out cdk.context.json",
     "bootstrap": "cdk bootstrap",
     "synth:app": "yarn clean-cdk && cdk synth --validation --app \"ts-node --prefer-ts-exts bin/index.ts\" > template.yaml",
-    "deploy:app": "cdk deploy --verbose --app \"npx ts-node --prefer-ts-exts bin/index.ts\" --require-approval never"
+    "deploy:app": "cdk deploy --app \"npx ts-node --prefer-ts-exts bin/index.ts\" --require-approval never"
   },
   "devDependencies": {
     "@types/jest": "^29.5.2",
