@@ -3,6 +3,8 @@ import * as dotenv from 'dotenv'
 import { getDeploymentStage, validateEnv } from './lib/utils'
 import { REQUIRED_ENV_VARIABLES } from './lib/models/types'
 import { stageValue } from './lib/helpers'
+import { Stack } from 'aws-cdk-lib/core'
+import { Construct } from 'constructs'
 
 dotenv.config({
   path: path.resolve(__dirname, `./.env.${getDeploymentStage(process.env.STAGE)}`),
@@ -37,10 +39,21 @@ export const config = {
     },
     route53: {
       hostedZoneId: 'Z0448513YG2VMTOLT2NK',
-      domainName: 'staging.anamnotes.com',
+      domainName: stageValue<string>({ staging: 'staging.anamnotes.com' }, 'anamnotes.com'),
     },
     dynamodb: {
-      streamArn: `arn:aws:dynamodb:us-east-1:211125551501:table/staging-anamnotes-stack-table/stream/2024-07-11T21:04:04.247`,
+      streamARN: (scope: Construct) => {
+        const streamName = stageValue<string>(
+          { staging: '2024-07-11T21:04:04.247' },
+          '2024-06-28T01:32:38.930',
+        )
+        const tableARN = Stack.of(scope).formatArn({
+          resource: 'table',
+          service: 'dynamodb',
+          resourceName: `${projectName}-table`,
+        })
+        return `${tableARN}/stream/${streamName}`
+      },
     },
     cognito: {
       domainPrefix: stageValue<string>(

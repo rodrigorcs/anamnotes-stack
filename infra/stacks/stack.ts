@@ -79,7 +79,7 @@ export class AnamnotesStack extends Stack {
       sortKey: { name: 'sk', type: DynamoDBAttributeType.STRING },
       deletionProtection: true,
       streamType: StreamViewType.NEW_IMAGE,
-      streamArn: config.aws.dynamodb.streamArn,
+      streamArn: config.aws.dynamodb.streamARN(this),
     })
 
     // ENVS
