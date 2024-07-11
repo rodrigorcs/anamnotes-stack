@@ -229,7 +229,7 @@ export class AnamnotesStack extends Stack {
           },
         },
         getConversations: {
-          reservedConcurrentExecutions: 3,
+          reservedConcurrentExecutions: 2,
           memoryMB: 128,
           timeoutSecs: 300,
           sourceCodePath: '../dist/handlers/get-conversations',
@@ -239,7 +239,7 @@ export class AnamnotesStack extends Stack {
           },
         },
         getConversation: {
-          reservedConcurrentExecutions: 3,
+          reservedConcurrentExecutions: 2,
           memoryMB: 128,
           timeoutSecs: 300,
           sourceCodePath: '../dist/handlers/get-conversation',
