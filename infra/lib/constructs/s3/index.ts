@@ -34,8 +34,8 @@ export class S3Bucket {
       publicReadAccess: false,
       objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_ENFORCED,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      autoDeleteObjects: stageValue({ production: false }, true),
-      removalPolicy: stageValue({ production: RemovalPolicy.RETAIN }, RemovalPolicy.DESTROY),
+      autoDeleteObjects: stageValue({ staging: true, sandbox: true }), // TODO: Add false for production
+      removalPolicy: stageValue({ staging: RemovalPolicy.DESTROY, sandbox: RemovalPolicy.DESTROY }), // TODO: Add retain for production
       encryption: props.encryption ? s3.BucketEncryption.S3_MANAGED : undefined,
       cors: props.corsConfig,
     })
