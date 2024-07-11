@@ -36,7 +36,7 @@ export const config = {
     },
     route53: {
       hostedZoneId: 'Z0448513YG2VMTOLT2NK',
-      domainName: 'anamnotes.com',
+      domainName: 'staging.anamnotes.com',
     },
   },
   stack: {
