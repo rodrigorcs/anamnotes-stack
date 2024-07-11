@@ -124,12 +124,12 @@ export class AnamnotesStack extends Stack {
         connect: websocketLambdas.connect.lambdaFn,
         disconnect: websocketLambdas.disconnect.lambdaFn,
       },
-      // gatewayDomain: {
-      //   domainName: config.aws.route53.domainName,
-      //   subdomainName: 'ws',
-      //   hostedZoneId: config.aws.route53.hostedZoneId,
-      //   certificateId: config.aws.acm.certificateId,
-      // },
+      gatewayDomain: {
+        domainName: config.aws.route53.domainName,
+        subdomainName: 'ws',
+        hostedZoneId: config.aws.route53.hostedZoneId,
+        certificateId: config.aws.acm.certificateId,
+      },
     })
 
     // LAMBDAS
