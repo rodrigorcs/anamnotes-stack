@@ -158,6 +158,7 @@ export class APIGatewayRestApi {
     this.restApi = new apigw.RestApi(scope, restApiName, {
       restApiName,
       deploy: true,
+      cloudWatchRole: true,
       deployOptions: {
         stageName: 'prod',
         metricsEnabled: true,
