@@ -38,6 +38,9 @@ export const config = {
       hostedZoneId: 'Z0448513YG2VMTOLT2NK',
       domainName: 'staging.anamnotes.com',
     },
+    dynamodb: {
+      streamArn: `arn:aws:dynamodb:us-east-1:211125551501:table/staging-anamnotes-stack-table/stream/2024-07-11T21:04:04.247`,
+    },
   },
   stack: {
     env: {
