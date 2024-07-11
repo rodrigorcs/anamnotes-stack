@@ -35,7 +35,10 @@ export const config = {
       openaiApiKey: `${ssmParametersRoot}/openai-api-key`,
     },
     acm: {
-      certificateId: '4da2fd45-4693-483e-84d3-d506823b9b48',
+      certificateId: stageValue<string>({
+        staging: 'a8eade8d-9b65-4b27-8a59-596e132898e8',
+        sandbox: '4da2fd45-4693-483e-84d3-d506823b9b48',
+      }),
     },
     route53: {
       hostedZoneId: stageValue<string>({
