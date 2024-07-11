@@ -2,6 +2,7 @@ import * as path from 'path'
 import * as dotenv from 'dotenv'
 import { getDeploymentStage, validateEnv } from './lib/utils'
 import { REQUIRED_ENV_VARIABLES } from './lib/models/types'
+import { stageValue } from './lib/helpers'
 
 dotenv.config({
   path: path.resolve(__dirname, `./.env.${getDeploymentStage(process.env.STAGE)}`),
@@ -40,6 +41,15 @@ export const config = {
     },
     dynamodb: {
       streamArn: `arn:aws:dynamodb:us-east-1:211125551501:table/staging-anamnotes-stack-table/stream/2024-07-11T21:04:04.247`,
+    },
+    cognito: {
+      domainPrefix: stageValue<string>(
+        {
+          production: 'anamnotes',
+          staging: 'staging-anamnotes',
+        },
+        'anamnotes', // TODO: Update to 'sandbox-anamnotes' after updating the naming in prod account
+      ),
     },
   },
   stack: {

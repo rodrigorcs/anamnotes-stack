@@ -342,7 +342,7 @@ export class AnamnotesStack extends Stack {
 
     // COGNITO
 
-    const userPool = new UserPool(this, { domainPrefix: 'anamnotes' })
+    const userPool = new UserPool(this, { domainPrefix: config.aws.cognito.domainPrefix })
     new UserPoolClient(this, {
       userPool: userPool.userPool,
     })
