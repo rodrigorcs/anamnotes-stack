@@ -38,15 +38,21 @@ export const config = {
       certificateId: '4da2fd45-4693-483e-84d3-d506823b9b48',
     },
     route53: {
-      hostedZoneId: 'Z0448513YG2VMTOLT2NK',
-      domainName: stageValue<string>({ staging: 'staging.anamnotes.com' }, 'anamnotes.com'),
+      hostedZoneId: stageValue<string>({
+        staging: 'Z03723123I6T44W2QOSIN',
+        sandbox: 'Z0448513YG2VMTOLT2NK',
+      }),
+      domainName: stageValue<string>({
+        staging: 'staging.anamnotes.com',
+        sandbox: 'anamnotes.com',
+      }),
     },
     dynamodb: {
       streamARN: (scope: Construct) => {
-        const streamName = stageValue<string>(
-          { staging: '2024-07-11T21:04:04.247' },
-          '2024-06-28T01:32:38.930',
-        )
+        const streamName = stageValue<string>({
+          staging: '2024-07-11T21:04:04.247',
+          sandbox: '2024-06-28T01:32:38.930',
+        })
         const tableARN = Stack.of(scope).formatArn({
           resource: 'table',
           service: 'dynamodb',
@@ -56,13 +62,10 @@ export const config = {
       },
     },
     cognito: {
-      domainPrefix: stageValue<string>(
-        {
-          production: 'anamnotes',
-          staging: 'staging-anamnotes',
-        },
-        'anamnotes', // TODO: Update to 'sandbox-anamnotes' after updating the naming in prod account
-      ),
+      domainPrefix: stageValue<string>({
+        staging: 'staging-anamnotes',
+        sandbox: 'anamnotes', // TODO: Update to 'sandbox-anamnotes' after updating the naming in prod account
+      }),
     },
   },
   stack: {

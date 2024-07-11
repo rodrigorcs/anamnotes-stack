@@ -46,7 +46,7 @@ export const createRequestTemplate = (
   return [actionMessageBody, messageAttributes].join(joiner)
 }
 
-export type ValidStageNames = 'production' | 'staging' | 'sandbox'
+export type ValidStageNames = 'staging' | 'sandbox' // TODO: Add 'production'
 
 /**
  * Returns the value for the specified stage from the given object, or the default value if the object is empty or the stage is not present in the object.
@@ -56,9 +56,11 @@ export type ValidStageNames = 'production' | 'staging' | 'sandbox'
  * @param {T} defaultValue The default value to return if the object is empty or the stage is not present in the object
  * @return {T} The value for the specified stage, or the default value
  */
-export const stageValue = <T>(stageObj: { [key in ValidStageNames]?: T }, defaultValue: T): T => {
+export const stageValue = <T>(stageObj: { [key in ValidStageNames]: T }): T => {
   const stage = process.env.STAGE as ValidStageNames
   if (!stage) throw new Error(`No stage found in the environment variables`)
 
-  return stageObj[stage] ?? defaultValue
+  const stageValue = stageObj[stage]
+
+  return stageValue
 }
