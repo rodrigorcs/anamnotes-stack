@@ -104,7 +104,7 @@ export class LambdaFunction {
       timeout: Duration.seconds(props.timeoutSecs),
       layers: props.layers,
       memorySize: props.memoryMB,
-      // reservedConcurrentExecutions: props.reservedConcurrentExecutions,
+      reservedConcurrentExecutions: props.reservedConcurrentExecutions,
       tracing: lambda.Tracing.ACTIVE,
       role,
       vpc: props.vpc,
