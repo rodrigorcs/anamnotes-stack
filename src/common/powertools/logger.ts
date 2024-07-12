@@ -19,7 +19,7 @@ class CustomLogger {
   constructor() {
     this.logger = new Logger({
       serviceName: config.infraServiceName,
-      logLevel: 'info',
+      logLevel: 'debug',
     })
     this.logs = []
   }
