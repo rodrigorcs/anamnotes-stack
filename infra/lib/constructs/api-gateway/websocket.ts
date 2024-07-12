@@ -2,12 +2,12 @@ import {
   Arn,
   aws_apigatewayv2 as apigw,
   aws_apigatewayv2_integrations as apigwIntegrations,
+  aws_apigatewayv2_authorizers as apigwAuthorizers,
   aws_lambda as lambda,
   aws_certificatemanager as acm,
 } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { config } from '../../../config'
-import { CNameRecord } from '../route53'
 
 interface IGatewayDomainProps {
   subdomainName: string
@@ -20,21 +20,35 @@ interface IAPIGatewayWebSocketProps {
   name?: string
   gatewayDomain?: IGatewayDomainProps
   handlers?: {
+    authorizer?: lambda.Function
     connect?: lambda.Function
     disconnect?: lambda.Function
   }
 }
 
 export class APIGatewayWebSocket {
+  private authorizer?: apigwAuthorizers.WebSocketLambdaAuthorizer
   public readonly webSocketAPI: apigw.WebSocketApi
   public readonly httpsURL: string
 
   constructor(scope: Construct, props: IAPIGatewayWebSocketProps) {
     const apiName = `${config.projectName}${props.name ? `-${props.name}-` : '-'}websocket-api`
+
+    if (props.handlers?.authorizer) {
+      this.authorizer = new apigwAuthorizers.WebSocketLambdaAuthorizer(
+        `${apiName}-authorizer`,
+        props.handlers?.authorizer,
+        {
+          identitySource: ['route.request.querystring.idToken'],
+        },
+      )
+    }
+
     this.webSocketAPI = new apigw.WebSocketApi(scope, apiName, {
       apiName,
       ...(props?.handlers?.connect && {
         connectRouteOptions: {
+          authorizer: this.authorizer,
           integration: new apigwIntegrations.WebSocketLambdaIntegration(
             `${apiName}-connect-fn-integration`,
             props.handlers.connect,
@@ -95,12 +109,7 @@ export class APIGatewayWebSocket {
         },
       )
 
-      new CNameRecord(scope, {
-        domainName: customDomain.name,
-        recordName: props.gatewayDomain.subdomainName,
-        hostedZoneId: props.gatewayDomain.hostedZoneId,
-        hostedZoneName: props.gatewayDomain.domainName,
-      })
+      // In Console, manually create a CNAME record pointing to the WS API
     }
   }
 }

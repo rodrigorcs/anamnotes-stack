@@ -88,6 +88,15 @@ export class AnamnotesStack extends Stack {
       STAGE: config.stage,
     }
 
+    // COGNITO
+
+    const { userPool: cognitoUserPool } = new UserPool(this, {
+      domainPrefix: config.aws.cognito.domainPrefix,
+    })
+    const { userPoolClient: cognitoUserPoolClient } = new UserPoolClient(this, {
+      userPool: cognitoUserPool,
+    })
+
     // API GATEWAY - WEBSOCKET API - LAMBDAS
 
     const { functionMap: websocketLambdas } = new GroupedLambdaFunctions(this, {
@@ -114,14 +123,19 @@ export class AnamnotesStack extends Stack {
             TABLE_NAME: anamnotesTable.tableName,
           },
         },
+        authorizer: {
+          reservedConcurrentExecutions: 1,
+          memoryMB: 128,
+          timeoutSecs: 300,
+          sourceCodePath: '../dist/handlers/authorize-ws-request',
+          environment: {
+            ...sharedLambdaEnvs,
+            TABLE_NAME: anamnotesTable.tableName,
+            USER_POOL_ID: cognitoUserPool.userPoolId,
+            USER_POOL_CLIENT_ID: cognitoUserPoolClient.userPoolClientId,
+          },
+        },
       },
-    })
-
-    // COGNITO
-
-    const userPool = new UserPool(this, { domainPrefix: config.aws.cognito.domainPrefix })
-    new UserPoolClient(this, {
-      userPool: userPool.userPool,
     })
 
     // API GATEWAY - WEBSOCKET API
@@ -130,6 +144,7 @@ export class AnamnotesStack extends Stack {
       handlers: {
         connect: websocketLambdas.connect.lambdaFn,
         disconnect: websocketLambdas.disconnect.lambdaFn,
+        authorizer: websocketLambdas.authorizer.lambdaFn,
       },
       gatewayDomain: {
         domainName: config.aws.route53.domainName,
@@ -269,7 +284,7 @@ export class AnamnotesStack extends Stack {
         certificateId: config.aws.acm.certificateId,
         endpointType: EndpointType.EDGE,
       },
-      cognitoUserPools: [userPool.userPool],
+      cognitoUserPools: [cognitoUserPool],
     })
 
     const baseResourceV1 = restApi.root.addResource('v1')
