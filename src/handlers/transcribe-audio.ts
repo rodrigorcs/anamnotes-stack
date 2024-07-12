@@ -27,26 +27,29 @@ const getRecordPromises = (event: SQSEvent) => {
             bucketName,
             objectKey,
           })
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const [_userPath, conversationPath, fileNameWithExtension] = objectKey.split('/')
+          const [userPath, conversationPath, fileNameWithExtension] = objectKey.split('/')
           const [fileName] = fileNameWithExtension.split('.')
+          const userId = userPath.split('=').pop()
           const conversationId = conversationPath.split('=').pop()
           const [chunkIdPart, isLastChunkPart] = fileName.split('-')
           const chunkId = chunkIdPart.split('=').pop()
           const isLastChunk = isLastChunkPart.split('=').pop() === 'true'
 
+          if (!userId) {
+            throw new Error('userId not found in file name, expected format: userId=1234')
+          }
           if (!chunkId) {
             throw new Error('chunkId not found in file name, expected format: chunkId=1234')
           }
           if (!conversationId) {
             throw new Error(
-              'conversationId not found in object key, expected format: userId=1234/conversationId=1234',
+              'conversationId not found in object key, expected format: conversationId=1234',
             )
           }
 
           const previousChunkId = (parseInt(chunkId) - 1).toString().padStart(3, '0')
           const previousTranscriptions = await chunkTranscriptionsRepository.get({
-            userId: 'test-userId',
+            userId,
             conversationId,
             id: previousChunkId,
           })
@@ -71,7 +74,7 @@ const getRecordPromises = (event: SQSEvent) => {
             try {
               const chunkTranscriptionCreatedItem = await chunkTranscriptionsRepository.create({
                 id: chunkId,
-                userId: 'test-userId',
+                userId,
                 conversationId,
                 contentSections,
                 isLastChunk,
