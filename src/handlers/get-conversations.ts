@@ -4,18 +4,22 @@ import { middyWrapper } from '../common/middy'
 import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda'
 import { ConversationsService } from '../services/ConversationsService'
 
-export const handler: APIGatewayProxyHandler = middyWrapper<APIGatewayProxyEvent>(async () => {
-  try {
-    const userId = 'test-userId'
-    const conversationsService = new ConversationsService()
-    logger.info('Getting conversations')
-    const conversationItems = await conversationsService.get({
-      userId,
-    })
+export const handler: APIGatewayProxyHandler = middyWrapper<APIGatewayProxyEvent>(
+  async (event, context) => {
+    try {
+      logger.debug('Ingested event', { event, context })
 
-    return successResponse({ conversations: conversationItems })
-  } catch (error: unknown) {
-    logger.error(JSON.stringify(error))
-    return errorResponse(400, error as Error)
-  }
-})
+      const userId = 'test-userId'
+      const conversationsService = new ConversationsService()
+      logger.info('Getting conversations')
+      const conversationItems = await conversationsService.get({
+        userId,
+      })
+
+      return successResponse({ conversations: conversationItems })
+    } catch (error: unknown) {
+      logger.error(JSON.stringify(error))
+      return errorResponse(400, error as Error)
+    }
+  },
+)
