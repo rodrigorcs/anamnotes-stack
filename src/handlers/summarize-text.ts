@@ -22,7 +22,8 @@ import { SummarizationsService } from '../services/SummarizationsService'
 
 export const handler: DynamoDBStreamHandler = async (event) => {
   try {
-    const { WEBSOCKET_ENDPOINT } = process.env as Record<string, string>
+    const { WEBSOCKET_ENDPOINT, STAGE } = process.env as Record<string, string>
+    const isProd = STAGE === 'sandbox'
 
     const client = new ApiGatewayManagementApiClient({ endpoint: WEBSOCKET_ENDPOINT })
     const chunkTranscriptionsRepository = new ChunkTranscriptionsRepository()
@@ -30,7 +31,9 @@ export const handler: DynamoDBStreamHandler = async (event) => {
     const wsConnectionsRepository = new WebSocketConnectionsRepository()
     const conversationsService = new ConversationsService()
     const summarizationsService = new SummarizationsService()
-    const AIProvider = AIProviderSwitcher.getProvider(AIProviders.OPEN_AI)
+    const AIProvider = AIProviderSwitcher.getProvider(
+      isProd ? AIProviders.OPEN_AI : AIProviders.DUMMY,
+    )
 
     // TODO: Add try/catch
     logger.info('Ingested event', { event })

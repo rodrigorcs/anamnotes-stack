@@ -12,6 +12,9 @@ import { AIProviderSwitcher, AIProviders } from '../switchers/AISwitcher'
 const getRecordPromises = (event: SQSEvent) => {
   const recordPromises: Promise<string>[] = []
   const chunkTranscriptionsRepository = new ChunkTranscriptionsRepository()
+  const { STAGE } = process.env as Record<string, string>
+  const isProd = STAGE === 'sandbox'
+
   for (const record of event.Records) {
     const promise = new Promise<string>(async (resolve, reject) => {
       try {
@@ -63,7 +66,8 @@ const getRecordPromises = (event: SQSEvent) => {
             : undefined
 
           try {
-            const AIProvider = AIProviderSwitcher.getProvider(AIProviders.OPEN_AI)
+            const aiProviderSlug = isProd ? AIProviders.OPEN_AI : AIProviders.DUMMY
+            const AIProvider = AIProviderSwitcher.getProvider(aiProviderSlug)
             const contentSections = await AIProvider.transcribe({
               fileByteArray,
               fileName: fileNameWithExtension,
