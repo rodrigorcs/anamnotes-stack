@@ -8,8 +8,8 @@ import {
 } from '../models/events/WebsocketEventV2'
 
 export const handler: APIGatewayProxyWebsocketHandlerV2 =
-  middyWrapper<APIGatewayProxyWebsocketEventV2>(async (event) => {
-    logger.info('Received event', { event })
+  middyWrapper<APIGatewayProxyWebsocketEventV2>(async (event, context) => {
+    logger.info('Received event', { event, context })
 
     const conversationId = event.queryStringParameters?.conversationId
     if (!conversationId) throw new Error('conversationId is missing in query string parameters')
