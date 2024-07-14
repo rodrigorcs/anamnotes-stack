@@ -34,7 +34,7 @@ export const allowExecuteAPIPolicy = (
       ],
     },
     context: {
-      userId: idToken.username as string,
+      userId: idToken['cognito:username'],
     },
   }
 }

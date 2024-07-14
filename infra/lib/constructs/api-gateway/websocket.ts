@@ -35,11 +35,13 @@ export class APIGatewayWebSocket {
     const apiName = `${config.projectName}${props.name ? `-${props.name}-` : '-'}websocket-api`
 
     if (props.handlers?.authorizer) {
+      const authorizerName = `${apiName}-authorizer`
       this.authorizer = new apigwAuthorizers.WebSocketLambdaAuthorizer(
-        `${apiName}-authorizer`,
+        authorizerName,
         props.handlers?.authorizer,
         {
           identitySource: ['route.request.querystring.idToken'],
+          authorizerName,
         },
       )
     }
