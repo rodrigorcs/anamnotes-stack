@@ -32,7 +32,7 @@ export const handler: DynamoDBStreamHandler = async (event) => {
     const conversationsService = new ConversationsService()
     const summarizationsService = new SummarizationsService()
     const AIProvider = AIProviderSwitcher.getProvider(
-      isProd ? AIProviders.OPEN_AI : AIProviders.OPEN_AI,
+      isProd ? AIProviders.OPEN_AI : AIProviders.DUMMY,
     )
 
     // TODO: Add try/catch
