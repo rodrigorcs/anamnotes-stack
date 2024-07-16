@@ -66,7 +66,7 @@ const getRecordPromises = (event: SQSEvent) => {
             : undefined
 
           try {
-            const aiProviderSlug = isProd ? AIProviders.OPEN_AI : AIProviders.DUMMY
+            const aiProviderSlug = isProd ? AIProviders.OPEN_AI : AIProviders.OPEN_AI
             const AIProvider = AIProviderSwitcher.getProvider(aiProviderSlug)
             const contentSections = await AIProvider.transcribe({
               fileByteArray,
