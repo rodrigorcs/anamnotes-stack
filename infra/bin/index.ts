@@ -11,7 +11,7 @@ export const createStack = (app: App) =>
     description: `Resources for ${config.stage} Anamnotes`,
     terminationProtection: stageValue({
       staging: false,
-      sandbox: false,
+      prod: true,
     }),
     tags: {
       Project: config.projectName,

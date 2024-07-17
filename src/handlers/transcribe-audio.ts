@@ -13,7 +13,7 @@ const getRecordPromises = (event: SQSEvent) => {
   const recordPromises: Promise<string>[] = []
   const chunkTranscriptionsRepository = new ChunkTranscriptionsRepository()
   const { STAGE } = process.env as Record<string, string>
-  const isProd = STAGE === 'sandbox'
+  const isProd = STAGE === 'prod'
 
   for (const record of event.Records) {
     const promise = new Promise<string>(async (resolve, reject) => {

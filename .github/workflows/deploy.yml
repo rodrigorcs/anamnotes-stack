@@ -24,7 +24,7 @@ jobs:
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             echo "AWS_ACCOUNT_NUMBER=735967209496" >> $GITHUB_ENV
             echo "AWS_REGION=us-east-1" >> $GITHUB_ENV
-            echo "STAGE=sandbox" >> $GITHUB_ENV
+            echo "STAGE=prod" >> $GITHUB_ENV
           elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
             echo "AWS_ACCOUNT_NUMBER=211125551501" >> $GITHUB_ENV
             echo "AWS_REGION=us-east-1" >> $GITHUB_ENV

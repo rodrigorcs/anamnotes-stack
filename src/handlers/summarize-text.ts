@@ -23,7 +23,7 @@ import { SummarizationsService } from '../services/SummarizationsService'
 export const handler: DynamoDBStreamHandler = async (event) => {
   try {
     const { WEBSOCKET_ENDPOINT, STAGE } = process.env as Record<string, string>
-    const isProd = STAGE === 'sandbox'
+    const isProd = STAGE === 'prod'
 
     const client = new ApiGatewayManagementApiClient({ endpoint: WEBSOCKET_ENDPOINT })
     const chunkTranscriptionsRepository = new ChunkTranscriptionsRepository()
