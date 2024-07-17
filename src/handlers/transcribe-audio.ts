@@ -12,6 +12,9 @@ import { AIProviderSwitcher, AIProviders } from '../switchers/AISwitcher'
 const getRecordPromises = (event: SQSEvent) => {
   const recordPromises: Promise<string>[] = []
   const chunkTranscriptionsRepository = new ChunkTranscriptionsRepository()
+  const { STAGE } = process.env as Record<string, string>
+  const isProd = STAGE === 'prod'
+
   for (const record of event.Records) {
     const promise = new Promise<string>(async (resolve, reject) => {
       try {
@@ -27,26 +30,29 @@ const getRecordPromises = (event: SQSEvent) => {
             bucketName,
             objectKey,
           })
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const [_userPath, conversationPath, fileNameWithExtension] = objectKey.split('/')
+          const [userPath, conversationPath, fileNameWithExtension] = objectKey.split('/')
           const [fileName] = fileNameWithExtension.split('.')
+          const userId = userPath.split('=').pop()
           const conversationId = conversationPath.split('=').pop()
           const [chunkIdPart, isLastChunkPart] = fileName.split('-')
           const chunkId = chunkIdPart.split('=').pop()
           const isLastChunk = isLastChunkPart.split('=').pop() === 'true'
 
+          if (!userId) {
+            throw new Error('userId not found in file name, expected format: userId=1234')
+          }
           if (!chunkId) {
             throw new Error('chunkId not found in file name, expected format: chunkId=1234')
           }
           if (!conversationId) {
             throw new Error(
-              'conversationId not found in object key, expected format: userId=1234/conversationId=1234',
+              'conversationId not found in object key, expected format: conversationId=1234',
             )
           }
 
           const previousChunkId = (parseInt(chunkId) - 1).toString().padStart(3, '0')
           const previousTranscriptions = await chunkTranscriptionsRepository.get({
-            userId: 'test-userId',
+            userId,
             conversationId,
             id: previousChunkId,
           })
@@ -60,7 +66,8 @@ const getRecordPromises = (event: SQSEvent) => {
             : undefined
 
           try {
-            const AIProvider = AIProviderSwitcher.getProvider(AIProviders.OPEN_AI)
+            const aiProviderSlug = isProd ? AIProviders.OPEN_AI : AIProviders.DUMMY
+            const AIProvider = AIProviderSwitcher.getProvider(aiProviderSlug)
             const contentSections = await AIProvider.transcribe({
               fileByteArray,
               fileName: fileNameWithExtension,
@@ -71,7 +78,7 @@ const getRecordPromises = (event: SQSEvent) => {
             try {
               const chunkTranscriptionCreatedItem = await chunkTranscriptionsRepository.create({
                 id: chunkId,
-                userId: 'test-userId',
+                userId,
                 conversationId,
                 contentSections,
                 isLastChunk,

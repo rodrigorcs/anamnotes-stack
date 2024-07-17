@@ -8,7 +8,6 @@ import { aws_secretsmanager as secrets } from 'aws-cdk-lib'
 export const setAppStageProfile: SetAppStageProfile = {
   prod: AppStageProfiles.PRODUCTION,
   staging: AppStageProfiles.STAGING,
-  sandbox: AppStageProfiles.SANDBOX,
 }
 
 export const getDeploymentStage = (stageVariable: string | undefined): AppStage => {

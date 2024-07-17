@@ -79,6 +79,7 @@ export class AnamnotesStack extends Stack {
       sortKey: { name: 'sk', type: DynamoDBAttributeType.STRING },
       deletionProtection: true,
       streamType: StreamViewType.NEW_IMAGE,
+      streamArn: config.aws.dynamodb.streamARN(this),
     })
 
     // ENVS
@@ -86,6 +87,15 @@ export class AnamnotesStack extends Stack {
     const sharedLambdaEnvs = {
       STAGE: config.stage,
     }
+
+    // COGNITO
+
+    const { userPool: cognitoUserPool } = new UserPool(this, {
+      domainPrefix: config.aws.cognito.domainPrefix,
+    })
+    const { userPoolClient: cognitoUserPoolClient } = new UserPoolClient(this, {
+      userPool: cognitoUserPool,
+    })
 
     // API GATEWAY - WEBSOCKET API - LAMBDAS
 
@@ -113,6 +123,18 @@ export class AnamnotesStack extends Stack {
             TABLE_NAME: anamnotesTable.tableName,
           },
         },
+        authorizer: {
+          reservedConcurrentExecutions: 1,
+          memoryMB: 128,
+          timeoutSecs: 300,
+          sourceCodePath: '../dist/handlers/authorize-ws-request',
+          environment: {
+            ...sharedLambdaEnvs,
+            TABLE_NAME: anamnotesTable.tableName,
+            USER_POOL_ID: cognitoUserPool.userPoolId,
+            USER_POOL_CLIENT_ID: cognitoUserPoolClient.userPoolClientId,
+          },
+        },
       },
     })
 
@@ -122,6 +144,7 @@ export class AnamnotesStack extends Stack {
       handlers: {
         connect: websocketLambdas.connect.lambdaFn,
         disconnect: websocketLambdas.disconnect.lambdaFn,
+        authorizer: websocketLambdas.authorizer.lambdaFn,
       },
       gatewayDomain: {
         domainName: config.aws.route53.domainName,
@@ -252,7 +275,7 @@ export class AnamnotesStack extends Stack {
 
     // API GATEWAY - REST API
 
-    const { restApi } = new APIGatewayRestApi(this, {
+    const { restApi, cognitoAuthorizer } = new APIGatewayRestApi(this, {
       identitySources: [IdentitySource.header('Authorization')],
       gatewayDomain: {
         domainName: config.aws.route53.domainName,
@@ -261,6 +284,7 @@ export class AnamnotesStack extends Stack {
         certificateId: config.aws.acm.certificateId,
         endpointType: EndpointType.EDGE,
       },
+      cognitoUserPools: [cognitoUserPool],
     })
 
     const baseResourceV1 = restApi.root.addResource('v1')
@@ -271,6 +295,7 @@ export class AnamnotesStack extends Stack {
 
     new NestedApiResources(this, {
       baseResource: conversationsResource,
+      cognitoAuthorizer,
       routes: [
         {
           resourcePath: [],
@@ -303,6 +328,7 @@ export class AnamnotesStack extends Stack {
 
     new NestedApiResources(this, {
       baseResource: conversationResource,
+      cognitoAuthorizer,
       routes: [
         {
           resourcePath: [],
@@ -322,6 +348,7 @@ export class AnamnotesStack extends Stack {
 
     new NestedApiResources(this, {
       baseResource: audioChunkResource,
+      cognitoAuthorizer,
       routes: [
         {
           resourcePath: ['uploadUrl'],
@@ -337,13 +364,6 @@ export class AnamnotesStack extends Stack {
           ],
         },
       ],
-    })
-
-    // COGNITO
-
-    const userPool = new UserPool(this, { domainPrefix: 'anamnotes' })
-    new UserPoolClient(this, {
-      userPool: userPool.userPool,
     })
 
     // PERMISSIONS

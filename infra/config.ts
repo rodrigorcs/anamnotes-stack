@@ -2,6 +2,9 @@ import * as path from 'path'
 import * as dotenv from 'dotenv'
 import { getDeploymentStage, validateEnv } from './lib/utils'
 import { REQUIRED_ENV_VARIABLES } from './lib/models/types'
+import { stageValue } from './lib/helpers'
+import { Stack } from 'aws-cdk-lib/core'
+import { Construct } from 'constructs'
 
 dotenv.config({
   path: path.resolve(__dirname, `./.env.${getDeploymentStage(process.env.STAGE)}`),
@@ -32,11 +35,40 @@ export const config = {
       openaiApiKey: `${ssmParametersRoot}/openai-api-key`,
     },
     acm: {
-      certificateId: '4da2fd45-4693-483e-84d3-d506823b9b48',
+      certificateId: stageValue<string>({
+        staging: 'a8eade8d-9b65-4b27-8a59-596e132898e8',
+        prod: '4da2fd45-4693-483e-84d3-d506823b9b48',
+      }),
     },
     route53: {
-      hostedZoneId: 'Z0448513YG2VMTOLT2NK',
-      domainName: 'anamnotes.com',
+      hostedZoneId: stageValue<string>({
+        staging: 'Z03723123I6T44W2QOSIN',
+        prod: 'Z0448513YG2VMTOLT2NK',
+      }),
+      domainName: stageValue<string>({
+        staging: 'staging.anamnotes.com',
+        prod: 'anamnotes.com',
+      }),
+    },
+    dynamodb: {
+      streamARN: (scope: Construct) => {
+        const streamName = stageValue<string>({
+          staging: '2024-07-11T21:04:04.247',
+          prod: '2024-06-28T01:32:38.930',
+        })
+        const tableARN = Stack.of(scope).formatArn({
+          resource: 'table',
+          service: 'dynamodb',
+          resourceName: `${projectName}-table`,
+        })
+        return `${tableARN}/stream/${streamName}`
+      },
+    },
+    cognito: {
+      domainPrefix: stageValue<string>({
+        staging: 'staging-anamnotes',
+        prod: 'anamnotes',
+      }),
     },
   },
   stack: {

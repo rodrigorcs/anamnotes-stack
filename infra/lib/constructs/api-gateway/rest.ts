@@ -1,11 +1,11 @@
 import {
-  Duration,
   RemovalPolicy,
   Arn,
   aws_apigateway as apigw,
   aws_logs as logs,
   aws_certificatemanager as acm,
   aws_iam as iam,
+  aws_cognito as cognito,
 } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { AppStage, HttpMethods } from '../../models/enums'
@@ -36,7 +36,7 @@ interface IRoute {
 
 interface INestedApiProps {
   baseResource: apigw.Resource
-  requestAuthorizer?: apigw.IAuthorizer
+  cognitoAuthorizer?: apigw.CognitoUserPoolsAuthorizer
   routes: IRoute[]
 }
 
@@ -57,7 +57,7 @@ export class NestedApiResources {
         resource = resource.addResource(path, {
           defaultCorsPreflightOptions,
           defaultMethodOptions: {
-            apiKeyRequired: true, // TODO: Remove when adding cognito authorizer
+            apiKeyRequired: false,
           },
         })
       })
@@ -65,10 +65,10 @@ export class NestedApiResources {
       route.lambdaIntegrations?.forEach((integration) => {
         const apigwMethodOptions = {
           ...integration.apigwMethodOptions,
-          authorizationType: props.requestAuthorizer
-            ? apigw.AuthorizationType.CUSTOM
+          authorizationType: props.cognitoAuthorizer
+            ? apigw.AuthorizationType.COGNITO
             : apigw.AuthorizationType.NONE,
-          authorizer: props.requestAuthorizer,
+          authorizer: props.cognitoAuthorizer,
         }
 
         const handler = integration.handler.sourceLambda
@@ -83,10 +83,10 @@ export class NestedApiResources {
       route.bucketIntegrations?.forEach((integration) => {
         const apigwMethodOptions = {
           ...integration.apigwMethodOptions,
-          authorizationType: props.requestAuthorizer
-            ? apigw.AuthorizationType.CUSTOM
+          authorizationType: props.cognitoAuthorizer
+            ? apigw.AuthorizationType.COGNITO
             : apigw.AuthorizationType.NONE,
-          authorizer: props.requestAuthorizer,
+          authorizer: props.cognitoAuthorizer,
         }
 
         resource.addMethod(
@@ -117,14 +117,12 @@ interface IGatewayDomainProps {
 interface APIGatewayRestApiProps {
   identitySources: string[]
   gatewayDomain?: IGatewayDomainProps
-  handlers?: {
-    requestAuthorizer?: LambdaFunction
-  }
+  cognitoUserPools?: cognito.IUserPool[]
 }
 
 export class APIGatewayRestApi {
   public readonly restApi: apigw.RestApi
-  public readonly requestLambdaAuthorizer: apigw.RequestAuthorizer
+  public readonly cognitoAuthorizer: apigw.CognitoUserPoolsAuthorizer
   public readonly restApiId: string
   public readonly restApiRootResourceId: string
 
@@ -158,6 +156,7 @@ export class APIGatewayRestApi {
     this.restApi = new apigw.RestApi(scope, restApiName, {
       restApiName,
       deploy: true,
+      cloudWatchRole: true,
       deployOptions: {
         stageName: 'prod',
         metricsEnabled: true,
@@ -173,18 +172,14 @@ export class APIGatewayRestApi {
       apiKeySourceType: apigw.ApiKeySourceType.HEADER,
     })
 
-    if (props.handlers?.requestAuthorizer) {
-      const requestLambdaAuthorizer = new apigw.RequestAuthorizer(
+    if (props?.cognitoUserPools) {
+      this.cognitoAuthorizer = new apigw.CognitoUserPoolsAuthorizer(
         scope,
-        `${config.projectName}-auth-request-authorizer`,
+        `${restApiName}-request-authorizer`,
         {
-          identitySources: props.identitySources,
-          handler: props.handlers.requestAuthorizer.sourceLambda,
-          resultsCacheTtl: Duration.seconds(5),
+          cognitoUserPools: props.cognitoUserPools,
         },
       )
-      requestLambdaAuthorizer._attachToApi(this.restApi)
-      this.requestLambdaAuthorizer = requestLambdaAuthorizer
     }
 
     if (props.gatewayDomain) {

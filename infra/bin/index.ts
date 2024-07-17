@@ -9,12 +9,10 @@ export const createStack = (app: App) =>
   new AnamnotesStack(app, config.projectName, {
     env: config.stack.env,
     description: `Resources for ${config.stage} Anamnotes`,
-    terminationProtection: stageValue(
-      {
-        production: true,
-      },
-      false,
-    ),
+    terminationProtection: stageValue({
+      staging: false,
+      prod: true,
+    }),
     tags: {
       Project: config.projectName,
       DeployedBy: config.deployedBy,

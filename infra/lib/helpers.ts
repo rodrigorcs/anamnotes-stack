@@ -4,6 +4,7 @@
  */
 
 import { IParameterItem } from './interfaces'
+import { AppStage } from './models/enums'
 
 const createPathParameter = ({ name, dataType }: IParameterItem) => ({
   Name: name,
@@ -46,23 +47,13 @@ export const createRequestTemplate = (
   return [actionMessageBody, messageAttributes].join(joiner)
 }
 
-export type ValidStageNames = 'production' | 'staging' | 'sandbox'
+type TRemoteAppStage = AppStage.STAGING | AppStage.PRODUCTION
 
-/**
- * Returns the value for the specified stage from the given object, or the default value if the object is empty or the stage is not present in the object.
- *
- * @template T The type of the object properties and the default value
- * @param {Object} stageObj An object with properties of type T, keyed by stage name
- * @param {T} defaultValue The default value to return if the object is empty or the stage is not present in the object
- * @return {T} The value for the specified stage, or the default value
- */
-export const stageValue = <T>(
-  stageObj: { [key in ValidStageNames]?: T },
-  defaultValue: T | undefined,
-): T | undefined => {
-  const stage = process.env.STAGE as ValidStageNames
+export const stageValue = <T>(stageObj: { [key in TRemoteAppStage]: T }): T => {
+  const stage = process.env.STAGE as TRemoteAppStage
+  if (!stage) throw new Error(`No stage found in the environment variables`)
 
-  if (stage && stageObj[stage] !== undefined) return stageObj[stage]
+  const stageValue = stageObj[stage]
 
-  return defaultValue
+  return stageValue
 }

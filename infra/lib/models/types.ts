@@ -8,7 +8,7 @@ export type REQUIRED_ENV_VARIABLES = {
    */
   DEPLOYED_BY: string
   /**
-   *  The stage to deploy as e.g. prod, staging, sandbox
+   *  The stage to deploy as e.g. prod, staging
    */
   STAGE: AppStage
 }

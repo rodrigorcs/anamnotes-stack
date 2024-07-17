@@ -2,17 +2,10 @@ name: Trigger Environment Deploy Workflow
 'on':
   push:
     branches:
-      - sandbox
       - staging
       - main
   workflow_dispatch: {}
 jobs:
-  sandbox:
-    name: Trigger sandbox deployment
-    with:
-      environment: sandbox
-    if: contains(github.ref, 'refs/heads/sandbox')
-    uses: ./.github/workflows/deploy.yml
   staging:
     name: Trigger staging deployment
     with:

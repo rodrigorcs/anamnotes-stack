@@ -3,12 +3,12 @@ import { WebSocketConnectionsRepository } from '../repositories/WebSocketConnect
 import dayjs from 'dayjs'
 import { middyWrapper } from '../common/middy'
 import {
-  APIGatewayProxyWebsocketEventV2,
-  APIGatewayProxyWebsocketHandlerV2,
+  IAPIGatewayProxyWebsocketAuthorizedEventV2,
+  TAPIGatewayProxyWebsocketAuthorizedHandlerV2,
 } from '../models/events/WebsocketEventV2'
 
-export const handler: APIGatewayProxyWebsocketHandlerV2 =
-  middyWrapper<APIGatewayProxyWebsocketEventV2>(async (event) => {
+export const handler: TAPIGatewayProxyWebsocketAuthorizedHandlerV2 =
+  middyWrapper<IAPIGatewayProxyWebsocketAuthorizedEventV2>(async (event) => {
     logger.info('Received event', { event })
 
     const conversationId = event.queryStringParameters?.conversationId
@@ -18,7 +18,7 @@ export const handler: APIGatewayProxyWebsocketHandlerV2 =
 
     const createdConnection = await wsConnectionsRepository.create({
       id: event.requestContext.connectionId,
-      userId: 'test-userId',
+      userId: event.requestContext.authorizer.userId,
       conversationId,
       createdAt: dayjs(),
     })
