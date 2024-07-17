@@ -54,7 +54,7 @@ export const config = {
       streamARN: (scope: Construct) => {
         const streamName = stageValue<string>({
           staging: '2024-07-11T21:04:04.247',
-          prod: '',
+          prod: '2024-07-17T13:51:50.497',
         })
         const tableARN = Stack.of(scope).formatArn({
           resource: 'table',

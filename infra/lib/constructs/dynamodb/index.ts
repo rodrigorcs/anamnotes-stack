@@ -21,26 +21,26 @@ export class DynamoDBTable {
 
   constructor(scope: Construct, props: IDynamoDBTableProps) {
     const tableName = `${config.projectName}${props.tableName ? `-${props.tableName}` : ''}-table`
-    // const table = dynamodb.Table.fromTableAttributes(scope, tableName, {
-    //   tableName,
-    //   tableStreamArn: props.streamArn,
-    // })
-
-    // this.table = table
-
-    // if (!table) {
-    const table = new dynamodb.Table(scope, `${tableName}-dynamodb-table`, {
+    const table = dynamodb.Table.fromTableAttributes(scope, tableName, {
       tableName,
-      partitionKey: props.partitionKey,
-      sortKey: props.sortKey,
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      deletionProtection: props.deletionProtection,
-      stream: props.streamType,
+      tableStreamArn: props.streamArn,
     })
-    for (const gsi of props.globalSecondaryIndexes || []) {
-      table.addGlobalSecondaryIndex(gsi)
-    }
+
     this.table = table
-    // }
+
+    if (!table) {
+      const table = new dynamodb.Table(scope, `${tableName}-dynamodb-table`, {
+        tableName,
+        partitionKey: props.partitionKey,
+        sortKey: props.sortKey,
+        billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+        deletionProtection: props.deletionProtection,
+        stream: props.streamType,
+      })
+      for (const gsi of props.globalSecondaryIndexes || []) {
+        table.addGlobalSecondaryIndex(gsi)
+      }
+      this.table = table
+    }
   }
 }
