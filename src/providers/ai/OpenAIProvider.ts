@@ -88,7 +88,7 @@ export class OpenAIProvider implements IAIProvider {
     const openAIClient = new OpenAI()
 
     const response = await openAIClient.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-4o-mini-2024-07-18',
       messages: [
         {
           role: 'system',
@@ -188,6 +188,8 @@ export class OpenAIProvider implements IAIProvider {
         },
       ],
     })
+
+    logger.info('OpenAI completions response', { response })
 
     const functionCalled = response.choices[0].message.tool_calls?.[0].function
     const functionParams = functionCalled?.arguments ? JSON.parse(functionCalled.arguments) : null
