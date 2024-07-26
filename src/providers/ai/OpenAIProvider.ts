@@ -88,7 +88,7 @@ export class OpenAIProvider implements IAIProvider {
     const openAIClient = new OpenAI()
 
     const response = await openAIClient.chat.completions.create({
-      model: 'gpt-4o-mini-2024-07-18',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
@@ -198,10 +198,12 @@ export class OpenAIProvider implements IAIProvider {
       throw new Error(functionParams.errorMessage)
     }
 
-    const sections = Object.entries(functionParams).map(([key, value]) => ({
-      slug: key,
-      content: value as string,
-    }))
+    const sections = Object.entries(functionParams)
+      .map(([key, value]) => ({
+        slug: key,
+        content: value as string,
+      }))
+      .filter((section) => section.content?.length)
 
     return sections
   }
