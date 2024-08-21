@@ -6,7 +6,7 @@ type TPrimaryKeysParams = Pick<ILead, 'source' | 'id'>
 
 const getPrimaryKeys = ({ source, id }: TPrimaryKeysParams) => {
   return {
-    pk: createDBKey<ILeadKeys>([{ lead: undefined, source }]),
+    pk: createDBKey<ILeadKeys>([{ lead: undefined }, { source }]),
     sk: createDBKey<ILeadKeys>([{ leadId: id }]),
   }
 }
