@@ -82,6 +82,13 @@ export class AnamnotesStack extends Stack {
       streamArn: config.aws.dynamodb.streamARN(this),
     })
 
+    const { table: onboardingTable } = new DynamoDBTable(this, {
+      tableName: 'onboarding',
+      partitionKey: { name: 'pk', type: DynamoDBAttributeType.STRING },
+      sortKey: { name: 'sk', type: DynamoDBAttributeType.STRING },
+      deletionProtection: true,
+    })
+
     // ENVS
 
     const sharedLambdaEnvs = {
@@ -95,6 +102,25 @@ export class AnamnotesStack extends Stack {
     })
     const { userPoolClient: cognitoUserPoolClient } = new UserPoolClient(this, {
       userPool: cognitoUserPool,
+    })
+
+    // API GATEWAY - WEBSOCKET API - LAMBDAS
+
+    const { functionMap: onboardingLambdas } = new GroupedLambdaFunctions(this, {
+      type: ELambdaGroupTypes.ONBOARDING,
+      sharedEnvs: sharedLambdaEnvs,
+      functionProps: {
+        captureLead: {
+          reservedConcurrentExecutions: 2,
+          memoryMB: 128,
+          timeoutSecs: 300,
+          sourceCodePath: '../dist/handlers/capture-lead',
+          environment: {
+            ...sharedLambdaEnvs,
+            TABLE_NAME: anamnotesTable.tableName,
+          },
+        },
+      },
     })
 
     // API GATEWAY - WEBSOCKET API - LAMBDAS
@@ -288,10 +314,30 @@ export class AnamnotesStack extends Stack {
     })
 
     const baseResourceV1 = restApi.root.addResource('v1')
+    const onboardingResource = baseResourceV1.addResource('onboarding')
     const conversationsResource = baseResourceV1.addResource('conversations')
     const conversationResource = conversationsResource.addResource('{conversationId}')
     const audioChunksResource = conversationResource.addResource('audioChunks')
     const audioChunkResource = audioChunksResource.addResource('{chunkId}')
+
+    new NestedApiResources(this, {
+      baseResource: onboardingResource,
+      routes: [
+        {
+          resourcePath: ['leads'],
+          lambdaIntegrations: [
+            {
+              method: HttpMethods.POST,
+              handler: onboardingLambdas.captureLead,
+              apigwMethodOptions: {
+                operationName: 'Capture lead from landing page',
+                apiKeyRequired: false,
+              },
+            },
+          ],
+        },
+      ],
+    })
 
     new NestedApiResources(this, {
       baseResource: conversationsResource,
@@ -367,6 +413,8 @@ export class AnamnotesStack extends Stack {
     })
 
     // PERMISSIONS
+
+    onboardingTable.grantReadWriteData(onboardingLambdas.captureLead.lambdaFn)
 
     anamnotesTable.grantReadWriteData(websocketLambdas.connect.lambdaFn)
     anamnotesTable.grantReadWriteData(websocketLambdas.disconnect.lambdaFn)

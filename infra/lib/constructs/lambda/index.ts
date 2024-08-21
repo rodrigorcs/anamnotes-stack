@@ -198,6 +198,7 @@ export enum ELambdaGroupTypes {
   FILE = 'file',
   AI = 'ai',
   CONVERSATION = 'conversation',
+  ONBOARDING = 'onboarding',
 }
 
 interface Props<T> {
