@@ -87,6 +87,7 @@ export class AnamnotesStack extends Stack {
       partitionKey: { name: 'pk', type: DynamoDBAttributeType.STRING },
       sortKey: { name: 'sk', type: DynamoDBAttributeType.STRING },
       deletionProtection: true,
+      create: true,
     })
 
     // ENVS

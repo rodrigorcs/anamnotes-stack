@@ -11,6 +11,7 @@ interface IDynamoDBTableProps {
   writeAccessPrincipalArn?: string
   streamType?: dynamodb.StreamViewType
   streamArn?: string
+  create?: boolean
 }
 
 export const DynamoDBAttributeType = dynamodb.AttributeType
@@ -21,14 +22,8 @@ export class DynamoDBTable {
 
   constructor(scope: Construct, props: IDynamoDBTableProps) {
     const tableName = `${config.projectName}${props.tableName ? `-${props.tableName}` : ''}-table`
-    const table = dynamodb.Table.fromTableAttributes(scope, tableName, {
-      tableName,
-      tableStreamArn: props.streamArn,
-    })
 
-    this.table = table
-
-    if (!table) {
+    if (props.create) {
       const table = new dynamodb.Table(scope, `${tableName}-dynamodb-table`, {
         tableName,
         partitionKey: props.partitionKey,
@@ -37,10 +32,19 @@ export class DynamoDBTable {
         deletionProtection: props.deletionProtection,
         stream: props.streamType,
       })
+
       for (const gsi of props.globalSecondaryIndexes || []) {
         table.addGlobalSecondaryIndex(gsi)
       }
+
       this.table = table
+      return
     }
+
+    const table = dynamodb.Table.fromTableAttributes(scope, tableName, {
+      tableName,
+      tableStreamArn: props.streamArn,
+    })
+    this.table = table
   }
 }
