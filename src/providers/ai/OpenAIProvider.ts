@@ -93,7 +93,7 @@ export class OpenAIProvider implements IAIProvider {
         {
           role: 'system',
           content:
-            'Você é um assistente médico, especializado em escrever os resumos das anamneses feitas pelo médico com o paciente.\n\nO médico fez a seguinte anamnese verbal com um paciente, a anamnese passou por uma transcrição que pode conter erros. Visto isso, considere o contexto médico ao ler a transcrição, principalmente exames, procedimentos, orgãos e remédios.\nCaso haja informação relevante e você esteja confiante quanto ao resumo, chame a função `resume_anamnesis`. Se não, chame a função `throw_error`.\n\nEvite sugerir diagnósticos ou tratamentos, apenas resuma o que foi dito na anamnese.',
+            'Você é um assistente médico, especializado em escrever os resumos das anamneses feitas pelo médico com o paciente.\n\nO médico fez a seguinte anamnese verbal com um paciente, a anamnese passou por uma transcrição que pode conter erros. Visto isso, considere o contexto médico ao ler a transcrição, principalmente exames, procedimentos, orgãos e remédios.\nCaso haja informação relevante e você esteja confiante quanto ao resumo, chame a função `resume_anamnesis`. Se não, chame a função `throw_error`.\n\nEvite sugerir diagnósticos ou tratamentos, apenas resuma o que foi dito na anamnese, não inclua a propriedade se não houver informação relevante.',
         },
         { role: 'user', content: JSON.stringify(contentSections) },
       ],
@@ -189,6 +189,8 @@ export class OpenAIProvider implements IAIProvider {
       ],
     })
 
+    logger.info('OpenAI completions response', { response })
+
     const functionCalled = response.choices[0].message.tool_calls?.[0].function
     const functionParams = functionCalled?.arguments ? JSON.parse(functionCalled.arguments) : null
 
@@ -196,10 +198,12 @@ export class OpenAIProvider implements IAIProvider {
       throw new Error(functionParams.errorMessage)
     }
 
-    const sections = Object.entries(functionParams).map(([key, value]) => ({
-      slug: key,
-      content: value as string,
-    }))
+    const sections = Object.entries(functionParams)
+      .map(([key, value]) => ({
+        slug: key,
+        content: value as string,
+      }))
+      .filter((section) => section.content?.length)
 
     return sections
   }
