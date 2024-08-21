@@ -106,25 +106,6 @@ export class AnamnotesStack extends Stack {
 
     // API GATEWAY - WEBSOCKET API - LAMBDAS
 
-    const { functionMap: onboardingLambdas } = new GroupedLambdaFunctions(this, {
-      type: ELambdaGroupTypes.ONBOARDING,
-      sharedEnvs: sharedLambdaEnvs,
-      functionProps: {
-        captureLead: {
-          reservedConcurrentExecutions: 2,
-          memoryMB: 128,
-          timeoutSecs: 300,
-          sourceCodePath: '../dist/handlers/capture-lead',
-          environment: {
-            ...sharedLambdaEnvs,
-            TABLE_NAME: anamnotesTable.tableName,
-          },
-        },
-      },
-    })
-
-    // API GATEWAY - WEBSOCKET API - LAMBDAS
-
     const { functionMap: websocketLambdas } = new GroupedLambdaFunctions(this, {
       type: ELambdaGroupTypes.WEBSOCKET,
       sharedEnvs: sharedLambdaEnvs,
@@ -181,6 +162,25 @@ export class AnamnotesStack extends Stack {
     })
 
     // LAMBDAS
+
+    // LAMBDAS - ONBOARDING
+
+    const { functionMap: onboardingLambdas } = new GroupedLambdaFunctions(this, {
+      type: ELambdaGroupTypes.ONBOARDING,
+      functionProps: {
+        captureLead: {
+          reservedConcurrentExecutions: 2,
+          memoryMB: 128,
+          timeoutSecs: 300,
+          sourceCodePath: '../dist/handlers/capture-lead',
+          environment: {
+            TABLE_NAME: onboardingTable.tableName,
+          },
+        },
+      },
+    })
+
+    // LAMBDAS - APPLICATION
 
     const { functionMap: aiLambdas } = new GroupedLambdaFunctions(this, {
       type: ELambdaGroupTypes.AI,
