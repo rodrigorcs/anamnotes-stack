@@ -4,6 +4,7 @@ export interface ILead {
   id: string
   emailAddress: string
   source: string
+  ipAddress: string
   createdAt: Dayjs
   updatedAt?: Dayjs
 }

@@ -18,6 +18,10 @@ export const SchemaDefinition: TSchemaDefinition<ILeadEntity> = {
     type: String,
     required: true,
   },
+  ipAddress: {
+    type: String,
+    required: false,
+  },
   source: {
     type: String,
     required: true,
