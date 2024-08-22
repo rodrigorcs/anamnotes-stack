@@ -36,7 +36,7 @@ export const config = {
     },
     acm: {
       certificateId: stageValue<string>({
-        staging: 'a8eade8d-9b65-4b27-8a59-596e132898e8',
+        staging: 'a97318e4-e07d-4d8d-8892-01daf5c3367a',
         prod: 'e3750459-4261-463f-ba63-243923a6afb6',
       }),
     },
