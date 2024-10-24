@@ -30,16 +30,22 @@ const getRecordPromises = (event: SQSEvent) => {
             bucketName,
             objectKey,
           })
-          const [userPath, conversationPath, fileNameWithExtension] = objectKey.split('/')
+          const [userPath, conversationPath, channelPath, fileNameWithExtension] =
+            objectKey.split('/')
           const [fileName] = fileNameWithExtension.split('.')
           const userId = userPath.split('=').pop()
           const conversationId = conversationPath.split('=').pop()
+          const channelSlug = channelPath.split('=').pop()
           const [chunkIdPart, isLastChunkPart] = fileName.split('-')
           const chunkId = chunkIdPart.split('=').pop()
           const isLastChunk = isLastChunkPart.split('=').pop() === 'true'
 
+          // TODO: Add zod validation
           if (!userId) {
             throw new Error('userId not found in file name, expected format: userId=1234')
+          }
+          if (!channelSlug) {
+            throw new Error('channelSlug not found in file name, expected format: channelSlug=user')
           }
           if (!chunkId) {
             throw new Error('chunkId not found in file name, expected format: chunkId=1234')
@@ -54,6 +60,7 @@ const getRecordPromises = (event: SQSEvent) => {
           const previousTranscriptions = await chunkTranscriptionsRepository.get({
             userId,
             conversationId,
+            channelSlug,
             id: previousChunkId,
           })
 
@@ -80,6 +87,7 @@ const getRecordPromises = (event: SQSEvent) => {
                 id: chunkId,
                 userId,
                 conversationId,
+                channelSlug,
                 contentSections,
                 isLastChunk,
                 createdAt: dayjs(),
