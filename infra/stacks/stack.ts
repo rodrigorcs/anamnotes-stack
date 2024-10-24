@@ -250,7 +250,7 @@ export class AnamnotesStack extends Stack {
       sharedEnvs: sharedLambdaEnvs,
       functionProps: {
         getChunkUploadUrl: {
-          reservedConcurrentExecutions: 1,
+          reservedConcurrentExecutions: 3,
           memoryMB: 128,
           timeoutSecs: 300,
           sourceCodePath: '../dist/handlers/get-chunk-upload-url',
