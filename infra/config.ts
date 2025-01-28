@@ -69,6 +69,14 @@ export const config = {
         staging: 'staging-anamnotes',
         prod: 'anamnotes',
       }),
+      googleIdP: {
+        clientId: '546907548376-e622vkucvrg9crqpsr3enbuarfalqse0.apps.googleusercontent.com',
+        clientSecret: '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',
+      },
+      callbackURL: stageValue<string>({
+        staging: 'https://staging.anamnotes.com',
+        prod: 'https://www.anamnotes.com',
+      }),
     },
   },
   stack: {

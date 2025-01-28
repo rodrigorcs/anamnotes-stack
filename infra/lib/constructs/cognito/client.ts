@@ -29,10 +29,15 @@ export class UserPoolClient {
     this.userPoolClient = new cognito.UserPoolClient(scope, userPoolClientName, {
       authFlows: {
         userSrp: true,
+        userPassword: true,
+      },
+      generateSecret: false,
+      oAuth: {
+        callbackUrls: [config.aws.cognito.callbackURL],
       },
       supportedIdentityProviders: [
         cognito.UserPoolClientIdentityProvider.COGNITO,
-        // cognito.UserPoolClientIdentityProvider.GOOGLE,
+        cognito.UserPoolClientIdentityProvider.GOOGLE,
         // cognito.UserPoolClientIdentityProvider.FACEBOOK,
         // cognito.UserPoolClientIdentityProvider.APPLE,
       ],

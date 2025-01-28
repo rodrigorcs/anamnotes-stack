@@ -22,6 +22,7 @@ import { S3Bucket, S3EventType, S3HTTPMethods } from '../lib/constructs/s3'
 import { GroupedSQS } from '../lib/constructs/sqs'
 import { UserPool } from '../lib/constructs/cognito'
 import { UserPoolClient } from '../lib/constructs/cognito/client'
+import { GoogleIdentityProvider } from '../lib/constructs/cognito/google'
 
 export class AnamnotesStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -102,6 +103,9 @@ export class AnamnotesStack extends Stack {
       domainPrefix: config.aws.cognito.domainPrefix,
     })
     const { userPoolClient: cognitoUserPoolClient } = new UserPoolClient(this, {
+      userPool: cognitoUserPool,
+    })
+    new GoogleIdentityProvider(this, {
       userPool: cognitoUserPool,
     })
 
