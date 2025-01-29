@@ -5,6 +5,7 @@ import { REQUIRED_ENV_VARIABLES } from './lib/models/types'
 import { stageValue } from './lib/helpers'
 import { Stack } from 'aws-cdk-lib/core'
 import { Construct } from 'constructs'
+import { AppStage } from './lib/models/enums'
 
 dotenv.config({
   path: path.resolve(__dirname, `./.env.${getDeploymentStage(process.env.STAGE)}`),
@@ -24,15 +25,26 @@ const stage = getDeploymentStage(validatedEnvs.STAGE)
 const projectId = 'anamnotes-stack' as const
 const projectName = `${stage}-${projectId}` as const
 const ssmParametersRoot = `/${stage}/${projectId}` as const
+const smParametersRoot = `${stage}/${projectId}` as const
 
 export const config = {
   projectId,
   projectName,
   stage,
+  isProd: stage === AppStage.PRODUCTION,
   aws: {
     ssm: {
       hfToken: `${ssmParametersRoot}/hf-token`,
       openaiApiKey: `${ssmParametersRoot}/openai-api-key`,
+    },
+    sm: {
+      googleIdPCredentials: {
+        name: `${smParametersRoot}/google-idp-credentials`,
+        keys: {
+          CLIENT_ID: 'clientId',
+          CLIENT_SECRET: 'clientSecret',
+        },
+      },
     },
     acm: {
       certificateId: stageValue<string>({
@@ -68,6 +80,10 @@ export const config = {
       domainPrefix: stageValue<string>({
         staging: 'staging-anamnotes',
         prod: 'anamnotes',
+      }),
+      callbackURL: stageValue<string>({
+        staging: 'https://www.app.staging.anamnotes.com',
+        prod: 'https://www.app.anamnotes.com',
       }),
     },
   },

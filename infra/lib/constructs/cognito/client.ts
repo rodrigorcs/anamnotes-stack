@@ -29,12 +29,28 @@ export class UserPoolClient {
     this.userPoolClient = new cognito.UserPoolClient(scope, userPoolClientName, {
       authFlows: {
         userSrp: true,
+        userPassword: true,
+      },
+      generateSecret: false,
+      oAuth: {
+        callbackUrls: [
+          `${config.aws.cognito.callbackURL}/`,
+          ...(config.isProd ? [] : ['http://localhost:5173/']),
+        ],
+        logoutUrls: [
+          `${config.aws.cognito.callbackURL}/`,
+          ...(config.isProd ? [] : ['http://localhost:5173/']),
+        ],
+        scopes: [cognito.OAuthScope.EMAIL, cognito.OAuthScope.OPENID, cognito.OAuthScope.PROFILE],
+        flows: {
+          authorizationCodeGrant: true,
+        },
       },
       supportedIdentityProviders: [
         cognito.UserPoolClientIdentityProvider.COGNITO,
-        // cognito.UserPoolClientIdentityProvider.GOOGLE,
-        // cognito.UserPoolClientIdentityProvider.FACEBOOK,
-        // cognito.UserPoolClientIdentityProvider.APPLE,
+        cognito.UserPoolClientIdentityProvider.GOOGLE,
+        // TODO: cognito.UserPoolClientIdentityProvider.FACEBOOK,
+        // TODO: cognito.UserPoolClientIdentityProvider.APPLE,
       ],
       readAttributes: clientReadAttributes,
       writeAttributes: clientWriteAttributes,
