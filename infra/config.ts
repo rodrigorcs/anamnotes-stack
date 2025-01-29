@@ -76,8 +76,8 @@ export const config = {
         clientSecret: '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',
       },
       callbackURL: stageValue<string>({
-        staging: 'https://staging.anamnotes.com',
-        prod: 'https://www.anamnotes.com',
+        staging: 'https://www.app.staging.anamnotes.com',
+        prod: 'https://www.app.anamnotes.com',
       }),
     },
   },
