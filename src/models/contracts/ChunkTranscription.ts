@@ -20,7 +20,6 @@ export interface IChunkTranscription {
   conversationId: string
   contentSections: IChunkTranscriptionContent
   isLastChunk: boolean
-  channelSlug: string
   createdAt: Dayjs
   updatedAt?: Dayjs
 }

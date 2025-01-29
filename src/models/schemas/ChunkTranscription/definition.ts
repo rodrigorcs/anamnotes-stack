@@ -67,10 +67,6 @@ export const chunkTranscriptionSchemaDefinition: TSchemaDefinition<IChunkTranscr
     type: String,
     required: true,
   },
-  channelSlug: {
-    type: String,
-    required: true,
-  },
   isLastChunk: {
     type: Boolean,
     required: true,

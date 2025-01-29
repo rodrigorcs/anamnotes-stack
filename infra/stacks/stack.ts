@@ -322,10 +322,7 @@ export class AnamnotesStack extends Stack {
     const onboardingResource = baseResourceV1.addResource('onboarding')
     const conversationsResource = baseResourceV1.addResource('conversations')
     const conversationResource = conversationsResource.addResource('{conversationId}')
-    const channelsResource = conversationResource.addResource('channels')
-    const channelResource = channelsResource.addResource('{channelSlug}')
-    const audioChunksResource = channelResource.addResource('audioChunks')
-    const audioChunkResource = audioChunksResource.addResource('{chunkId}')
+    const audioChunkResource = conversationResource.addResource('{chunkId}')
 
     new NestedApiResources(this, {
       baseResource: onboardingResource,

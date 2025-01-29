@@ -15,17 +15,14 @@ export const handler: APIGatewayProxyWithCognitoAuthorizerHandler =
       const userId = getUserIdFromEvent(event)
       const { BUCKET_NAME } = process.env as Record<string, string>
 
-      const { conversationId, channelSlug, chunkId } = event.pathParameters as Record<
-        string,
-        string
-      >
+      const { conversationId, chunkId } = event.pathParameters as Record<string, string>
       const { isLastChunk: isLastChunkStr } = event.queryStringParameters as Record<string, string>
       const isLastChunk = isLastChunkStr === 'true'
 
       const client = new S3Client()
       const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
-        Key: `userId=${userId}/conversationId=${conversationId}/channelSlug=${channelSlug}/chunkId=${chunkId}-isLastChunk=${isLastChunk}.webm`,
+        Key: `userId=${userId}/conversationId=${conversationId}/chunkId=${chunkId}-isLastChunk=${isLastChunk}.webm`,
       })
       const signedUrl = await getSignedUrl(client, command, { expiresIn: 3600 })
 
