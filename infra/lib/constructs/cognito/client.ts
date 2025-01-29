@@ -33,13 +33,19 @@ export class UserPoolClient {
       },
       generateSecret: false,
       oAuth: {
-        callbackUrls: [config.aws.cognito.callbackURL],
+        callbackUrls: [
+          `${config.aws.cognito.callbackURL}/`,
+          ...(config.isProd ? [] : ['http://localhost:5173/']),
+        ],
+        flows: {
+          authorizationCodeGrant: true,
+        },
       },
       supportedIdentityProviders: [
         cognito.UserPoolClientIdentityProvider.COGNITO,
         cognito.UserPoolClientIdentityProvider.GOOGLE,
-        // cognito.UserPoolClientIdentityProvider.FACEBOOK,
-        // cognito.UserPoolClientIdentityProvider.APPLE,
+        // TODO: cognito.UserPoolClientIdentityProvider.FACEBOOK,
+        // TODO: cognito.UserPoolClientIdentityProvider.APPLE,
       ],
       readAttributes: clientReadAttributes,
       writeAttributes: clientWriteAttributes,

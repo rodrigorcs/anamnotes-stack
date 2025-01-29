@@ -5,6 +5,7 @@ import { REQUIRED_ENV_VARIABLES } from './lib/models/types'
 import { stageValue } from './lib/helpers'
 import { Stack } from 'aws-cdk-lib/core'
 import { Construct } from 'constructs'
+import { AppStage } from './lib/models/enums'
 
 dotenv.config({
   path: path.resolve(__dirname, `./.env.${getDeploymentStage(process.env.STAGE)}`),
@@ -29,6 +30,7 @@ export const config = {
   projectId,
   projectName,
   stage,
+  isProd: stage === AppStage.PRODUCTION,
   aws: {
     ssm: {
       hfToken: `${ssmParametersRoot}/hf-token`,
