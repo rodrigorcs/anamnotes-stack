@@ -23,6 +23,8 @@ import { GroupedSQS } from '../lib/constructs/sqs'
 import { UserPool } from '../lib/constructs/cognito'
 import { UserPoolClient } from '../lib/constructs/cognito/client'
 import { GoogleIdentityProvider } from '../lib/constructs/cognito/google'
+import { ExistingSecret } from '../lib/constructs/sm'
+import { getSecretValue } from '../lib/utils'
 
 export class AnamnotesStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -33,6 +35,12 @@ export class AnamnotesStack extends Stack {
     const { value: openaiApiKey } = new ExistingStringSystemParameter(this, {
       path: config.aws.ssm.openaiApiKey,
       fetchInSynthesisTime: true,
+    })
+
+    // SECRETS
+
+    const { secret: googleIdPCredentialsSecret } = new ExistingSecret(this, {
+      secretName: config.aws.sm.googleIdPCredentials.name,
     })
 
     // SQS QUEUES
@@ -107,6 +115,16 @@ export class AnamnotesStack extends Stack {
     })
     new GoogleIdentityProvider(this, {
       userPool: cognitoUserPool,
+      clientCredentials: {
+        id: getSecretValue(
+          googleIdPCredentialsSecret,
+          config.aws.sm.googleIdPCredentials.keys.CLIENT_ID,
+        ),
+        secret: getSecretValue(
+          googleIdPCredentialsSecret,
+          config.aws.sm.googleIdPCredentials.keys.CLIENT_SECRET,
+        ),
+      },
     })
 
     // API GATEWAY - WEBSOCKET API - LAMBDAS

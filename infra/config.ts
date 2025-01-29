@@ -25,6 +25,7 @@ const stage = getDeploymentStage(validatedEnvs.STAGE)
 const projectId = 'anamnotes-stack' as const
 const projectName = `${stage}-${projectId}` as const
 const ssmParametersRoot = `/${stage}/${projectId}` as const
+const smParametersRoot = `${stage}/${projectId}` as const
 
 export const config = {
   projectId,
@@ -35,6 +36,15 @@ export const config = {
     ssm: {
       hfToken: `${ssmParametersRoot}/hf-token`,
       openaiApiKey: `${ssmParametersRoot}/openai-api-key`,
+    },
+    sm: {
+      googleIdPCredentials: {
+        name: `${smParametersRoot}/google-idp-credentials`,
+        keys: {
+          CLIENT_ID: 'clientId',
+          CLIENT_SECRET: 'clientSecret',
+        },
+      },
     },
     acm: {
       certificateId: stageValue<string>({
@@ -71,10 +81,6 @@ export const config = {
         staging: 'staging-anamnotes',
         prod: 'anamnotes',
       }),
-      googleIdP: {
-        clientId: '546907548376-e622vkucvrg9crqpsr3enbuarfalqse0.apps.googleusercontent.com',
-        clientSecret: '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',
-      },
       callbackURL: stageValue<string>({
         staging: 'https://www.app.staging.anamnotes.com',
         prod: 'https://www.app.anamnotes.com',

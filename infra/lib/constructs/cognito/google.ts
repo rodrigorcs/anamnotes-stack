@@ -4,6 +4,10 @@ import { Construct } from 'constructs'
 
 interface IGoogleIdentityProviderProps {
   userPool: cognito.UserPool
+  clientCredentials: {
+    id: string
+    secret: string
+  }
 }
 export class GoogleIdentityProvider {
   public readonly googleIdP: cognito.UserPoolIdentityProviderGoogle
@@ -13,8 +17,8 @@ export class GoogleIdentityProvider {
 
     this.googleIdP = new cognito.UserPoolIdentityProviderGoogle(scope, googleIdPName, {
       userPool: props.userPool,
-      clientId: config.aws.cognito.googleIdP.clientId,
-      clientSecret: config.aws.cognito.googleIdP.clientSecret,
+      clientId: props.clientCredentials.id,
+      clientSecret: props.clientCredentials.secret,
       scopes: [
         cognito.OAuthScope.EMAIL.scopeName,
         cognito.OAuthScope.OPENID.scopeName,
