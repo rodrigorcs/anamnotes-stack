@@ -37,6 +37,11 @@ export class UserPoolClient {
           `${config.aws.cognito.callbackURL}/`,
           ...(config.isProd ? [] : ['http://localhost:5173/']),
         ],
+        logoutUrls: [
+          `${config.aws.cognito.callbackURL}/`,
+          ...(config.isProd ? [] : ['http://localhost:5173/']),
+        ],
+        scopes: [cognito.OAuthScope.EMAIL, cognito.OAuthScope.OPENID, cognito.OAuthScope.PROFILE],
         flows: {
           authorizationCodeGrant: true,
         },

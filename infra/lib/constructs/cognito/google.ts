@@ -15,7 +15,11 @@ export class GoogleIdentityProvider {
       userPool: props.userPool,
       clientId: config.aws.cognito.googleIdP.clientId,
       clientSecret: config.aws.cognito.googleIdP.clientSecret,
-      scopes: ['email', 'openid', 'profile'],
+      scopes: [
+        cognito.OAuthScope.EMAIL.scopeName,
+        cognito.OAuthScope.OPENID.scopeName,
+        cognito.OAuthScope.PROFILE.scopeName,
+      ],
       attributeMapping: {
         email: cognito.ProviderAttribute.GOOGLE_EMAIL,
         fullname: cognito.ProviderAttribute.GOOGLE_NAME,
